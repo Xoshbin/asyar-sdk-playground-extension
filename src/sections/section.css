@@ -1,0 +1,207 @@
+/* Shared section layout — imported by every *Section.svelte */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 16px;
+  gap: 12px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--separator) transparent;
+}
+
+/* ── Header ── */
+.section-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--separator);
+}
+
+.section-title {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.section-desc {
+  display: block;
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  opacity: 0.7;
+}
+
+/* ── Action buttons ── */
+.btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--separator);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+  text-align: left;
+}
+
+.action-btn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--accent-primary);
+}
+
+.action-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.action-btn.danger {
+  background: color-mix(in srgb, #ef4444 6%, transparent);
+  border-color: color-mix(in srgb, #ef4444 25%, transparent);
+  color: #ef4444;
+}
+
+.action-btn.danger:hover:not(:disabled) {
+  background: color-mix(in srgb, #ef4444 12%, transparent);
+}
+
+.btn-icon {
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.btn-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.btn-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.action-btn.danger .btn-name { color: inherit; }
+
+.btn-hint {
+  font-size: 10px;
+  color: var(--text-secondary);
+  opacity: 0.65;
+  line-height: 1.2;
+}
+
+/* ── Two-column button row ── */
+.btn-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.btn-row .action-btn {
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 8px;
+  text-align: center;
+}
+
+.btn-row .btn-text { align-items: center; }
+
+/* ── Input fields ── */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  opacity: 0.6;
+  padding-left: 2px;
+}
+
+.field-input {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--separator);
+  border-radius: 7px;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.field-input:focus {
+  border-color: var(--accent-primary);
+}
+
+/* ── Output terminal ── */
+.output-area {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.output-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  opacity: 0.4;
+  padding-left: 2px;
+}
+
+.output-body {
+  font-family: "SF Mono", "Fira Mono", "Cascadia Code", monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--separator);
+  border-radius: 8px;
+  min-height: 56px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: var(--text-primary);
+}
+
+.output-body.muted {
+  color: var(--text-secondary);
+  opacity: 0.4;
+  font-style: italic;
+  font-family: inherit;
+}
+
+.output-body.ok  { border-left: 3px solid #22c55e; }
+.output-body.err { border-left: 3px solid #ef4444; color: #ef4444; }
+
+/* ── Inline note ── */
+.note {
+  font-size: 10px;
+  color: var(--text-secondary);
+  opacity: 0.55;
+  line-height: 1.5;
+}

@@ -1,0 +1,29 @@
+{
+  "id": "org.asyar.sdk-playground",
+  "name": "SDK Playground",
+  "version": "1.0.0",
+  "description": "Developer playground for testing Asyar SDK services in a Tier 2 extension",
+  "author": "Developer",
+  "main": "dist/index.js",
+  "searchable": true,
+  "icon": "🧪",
+  "type": "view",
+  "defaultView": "DefaultView",
+  "permissions": [
+    "selection:read",
+    "clipboard:read",
+    "notifications:send",
+    "storage:read",
+    "storage:write",
+    "network"
+  ],
+  "commands": [
+    {
+      "id": "open",
+      "name": "Open SDK Playground",
+      "description": "Test Asyar SDK services in a sandboxed Tier 2 extension",
+      "resultType": "view",
+      "icon": "🧪"
+    }
+  ]
+}
