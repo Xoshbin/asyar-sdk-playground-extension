@@ -7,6 +7,7 @@
   import NetworkSection from './sections/NetworkSection.svelte';
   import AISection from './sections/AISection.svelte';
   import OAuthSection from './sections/OAuthSection.svelte';
+  import ShellSection from './sections/ShellSection.svelte';
 
   let activeTab = $state('feedback');
 
@@ -19,6 +20,7 @@
     { id: 'network',       label: 'Network',        icon: '🌐' },
     { id: 'ai',            label: 'AI',             icon: '🤖' },
     { id: 'oauth',         label: 'OAuth',          icon: '🔑' },
+    { id: 'shell',         label: 'Shell',          icon: '🐚' },
   ];
 </script>
 
@@ -55,6 +57,8 @@
       <AISection />
     {:else if activeTab === 'oauth'}
       <OAuthSection />
+    {:else if activeTab === 'shell'}
+      <ShellSection />
     {/if}
   </div>
 </div>
