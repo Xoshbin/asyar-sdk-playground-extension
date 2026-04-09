@@ -5,6 +5,7 @@
   import NotificationSection from './sections/NotificationSection.svelte';
   import StorageSection from './sections/StorageSection.svelte';
   import NetworkSection from './sections/NetworkSection.svelte';
+  import AISection from './sections/AISection.svelte';
 
   let activeTab = $state('feedback');
 
@@ -15,6 +16,7 @@
     { id: 'notifications', label: 'Notifications',  icon: '🔔' },
     { id: 'storage',       label: 'Storage',        icon: '📦' },
     { id: 'network',       label: 'Network',        icon: '🌐' },
+    { id: 'ai',            label: 'AI',             icon: '🤖' },
   ];
 </script>
 
@@ -47,6 +49,8 @@
       <StorageSection />
     {:else if activeTab === 'network'}
       <NetworkSection />
+    {:else if activeTab === 'ai'}
+      <AISection />
     {/if}
   </div>
 </div>

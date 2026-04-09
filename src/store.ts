@@ -5,6 +5,7 @@ import type {
   INotificationService,
   IStorageService,
   INetworkService,
+  IAIService,
 } from 'asyar-sdk';
 
 /**
@@ -20,4 +21,5 @@ export const svc = {
   notification: null as unknown as INotificationService,
   storage:      null as unknown as IStorageService,
   network:      null as unknown as INetworkService,
+  ai:           null as unknown as IAIService,
 };

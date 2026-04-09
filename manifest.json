@@ -15,7 +15,8 @@
     "notifications:send",
     "storage:read",
     "storage:write",
-    "network"
+    "network",
+    "ai:use"
   ],
   "commands": [
     {
