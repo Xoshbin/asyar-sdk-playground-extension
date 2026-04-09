@@ -16,7 +16,8 @@
     "storage:read",
     "storage:write",
     "network",
-    "ai:use"
+    "ai:use",
+    "oauth:use"
   ],
   "commands": [
     {

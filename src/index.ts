@@ -9,6 +9,7 @@ import type {
   INetworkService,
   IExtensionManager,
   IAIService,
+  IOAuthService,
 } from 'asyar-sdk';
 import { svc } from './store';
 import DefaultView from './DefaultView.svelte';
@@ -25,6 +26,7 @@ class SDKPlaygroundExtension implements Extension {
     svc.storage      = context.getService<IStorageService>('StorageService');
     svc.network      = context.getService<INetworkService>('NetworkService');
     svc.ai           = context.getService<IAIService>('AIService');
+    svc.oauth        = context.getService<IOAuthService>('OAuthService');
     console.log('[SDKPlayground] Initialized');
   }
 

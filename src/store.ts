@@ -6,6 +6,7 @@ import type {
   IStorageService,
   INetworkService,
   IAIService,
+  IOAuthService,
 } from 'asyar-sdk';
 
 /**
@@ -22,4 +23,5 @@ export const svc = {
   storage:      null as unknown as IStorageService,
   network:      null as unknown as INetworkService,
   ai:           null as unknown as IAIService,
+  oauth:        null as unknown as IOAuthService,
 };
