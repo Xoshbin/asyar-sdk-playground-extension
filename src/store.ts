@@ -9,6 +9,7 @@ import type {
   IOAuthService,
   IShellService,
   IFileManagerService,
+  IInteropService,
 } from 'asyar-sdk';
 
 /**
@@ -28,4 +29,5 @@ export const svc = {
   oauth:        null as unknown as IOAuthService,
   shell:        null as unknown as IShellService,
   fileManager:  null as unknown as IFileManagerService,
+  interop:      null as unknown as IInteropService,
 };

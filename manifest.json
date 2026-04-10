@@ -20,7 +20,8 @@
     "oauth:use",
     "shell:spawn",
     "fs:read",
-    "fs:write"
+    "fs:write",
+    "extension:invoke"
   ],
   "commands": [
     {
