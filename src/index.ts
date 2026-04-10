@@ -11,6 +11,7 @@ import type {
   IAIService,
   IOAuthService,
   IShellService,
+  IFileManagerService,
 } from 'asyar-sdk';
 import { svc } from './store';
 import DefaultView from './DefaultView.svelte';
@@ -29,6 +30,7 @@ class SDKPlaygroundExtension implements Extension {
     svc.ai           = context.getService<IAIService>('AIService');
     svc.oauth        = context.getService<IOAuthService>('OAuthService');
     svc.shell        = context.getService<IShellService>('ShellService');
+    svc.fileManager  = context.getService<IFileManagerService>('FileManagerService');
     console.log('[SDKPlayground] Initialized');
   }
 

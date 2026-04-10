@@ -18,7 +18,9 @@
     "network",
     "ai:use",
     "oauth:use",
-    "shell:spawn"
+    "shell:spawn",
+    "fs:read",
+    "fs:write"
   ],
   "commands": [
     {

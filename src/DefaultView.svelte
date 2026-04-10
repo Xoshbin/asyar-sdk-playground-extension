@@ -8,6 +8,7 @@
   import AISection from './sections/AISection.svelte';
   import OAuthSection from './sections/OAuthSection.svelte';
   import ShellSection from './sections/ShellSection.svelte';
+  import FileManagerSection from './sections/FileManagerSection.svelte';
 
   let activeTab = $state('feedback');
 
@@ -21,6 +22,7 @@
     { id: 'ai',            label: 'AI',             icon: '🤖' },
     { id: 'oauth',         label: 'OAuth',          icon: '🔑' },
     { id: 'shell',         label: 'Shell',          icon: '🐚' },
+    { id: 'filemanager',   label: 'File Manager',   icon: '📁' },
   ];
 </script>
 
@@ -59,6 +61,8 @@
       <OAuthSection />
     {:else if activeTab === 'shell'}
       <ShellSection />
+    {:else if activeTab === 'filemanager'}
+      <FileManagerSection />
     {/if}
   </div>
 </div>
