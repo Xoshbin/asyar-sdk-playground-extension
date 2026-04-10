@@ -30,6 +30,15 @@
       "description": "Test Asyar SDK services in a sandboxed Tier 2 extension",
       "resultType": "view",
       "icon": "🧪"
+    },
+    {
+      "id": "tick-test",
+      "name": "Scheduling Tick Test",
+      "description": "Background command fired by the platform scheduler every 60 seconds",
+      "resultType": "no-view",
+      "schedule": {
+        "intervalSeconds": 60
+      }
     }
   ]
 }

@@ -14,7 +14,7 @@ import type {
   IFileManagerService,
   IInteropService,
 } from 'asyar-sdk';
-import { svc } from './store';
+import { svc, scheduling } from './store';
 import DefaultView from './DefaultView.svelte';
 
 class SDKPlaygroundExtension implements Extension {
@@ -41,10 +41,13 @@ class SDKPlaygroundExtension implements Extension {
   async viewActivated(_viewId: string): Promise<void> {}
   async viewDeactivated(_viewId: string): Promise<void> {}
 
-  async executeCommand(commandId: string, _args?: Record<string, any>): Promise<any> {
+  async executeCommand(commandId: string, args?: Record<string, any>): Promise<any> {
     if (commandId === 'open') {
       this.extensionManager?.navigateToView('org.asyar.sdk-playground/DefaultView');
       return { type: 'view', viewPath: 'org.asyar.sdk-playground/DefaultView' };
+    }
+    if (commandId === 'tick-test') {
+      scheduling.recordTick(args ?? {});
     }
   }
 

@@ -10,21 +10,23 @@
   import ShellSection from './sections/ShellSection.svelte';
   import FileManagerSection from './sections/FileManagerSection.svelte';
   import InteropSection from './sections/InteropSection.svelte';
+  import SchedulingSection from './sections/SchedulingSection.svelte';
 
   let activeTab = $state('feedback');
 
   const tabs = [
-    { id: 'feedback',      label: 'Feedback',      icon: '🍞' },
-    { id: 'selection',     label: 'Selection',      icon: '✂️' },
-    { id: 'clipboard',     label: 'Clipboard',      icon: '📋' },
-    { id: 'notifications', label: 'Notifications',  icon: '🔔' },
-    { id: 'storage',       label: 'Storage',        icon: '📦' },
-    { id: 'network',       label: 'Network',        icon: '🌐' },
-    { id: 'ai',            label: 'AI',             icon: '🤖' },
-    { id: 'oauth',         label: 'OAuth',          icon: '🔑' },
-    { id: 'shell',         label: 'Shell',          icon: '🐚' },
-    { id: 'filemanager',   label: 'File Manager',   icon: '📁' },
-    { id: 'interop',       label: 'Interop',        icon: '🔗' },
+    { id: 'feedback',    label: 'Feedback',    icon: '🍞' },
+    { id: 'selection',   label: 'Selection',   icon: '✂️' },
+    { id: 'clipboard',   label: 'Clipboard',   icon: '📋' },
+    { id: 'notifications', label: 'Notifications', icon: '🔔' },
+    { id: 'storage',     label: 'Storage',     icon: '📦' },
+    { id: 'network',     label: 'Network',     icon: '🌐' },
+    { id: 'ai',          label: 'AI',          icon: '🤖' },
+    { id: 'oauth',       label: 'OAuth',       icon: '🔑' },
+    { id: 'shell',       label: 'Shell',       icon: '🐚' },
+    { id: 'filemanager', label: 'File Manager', icon: '📁' },
+    { id: 'interop',     label: 'Interop',     icon: '🔗' },
+    { id: 'scheduling',  label: 'Scheduling',  icon: '⏱️' },
   ];
 </script>
 
@@ -67,6 +69,8 @@
       <FileManagerSection />
     {:else if activeTab === 'interop'}
       <InteropSection />
+    {:else if activeTab === 'scheduling'}
+      <SchedulingSection />
     {/if}
   </div>
 </div>
