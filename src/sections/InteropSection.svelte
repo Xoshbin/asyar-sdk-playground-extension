@@ -49,7 +49,7 @@
     </div>
     <div class="field">
       <span class="field-label">Args (JSON, optional)</span>
-      <input class="field-input" type="text" bind:value={args} placeholder='{"query": "hello"}' />
+      <input class="field-input" type="text" bind:value={args} placeholder={'{"query": "hello"}'} />
     </div>
   </div>
 
