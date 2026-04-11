@@ -10,7 +10,6 @@
   "type": "view",
   "defaultView": "DefaultView",
   "asyarSdk": "^1.11.0",
-  "minAppVersion": "1.0.0",
   "permissions": [
     "selection:read",
     "clipboard:read",
@@ -41,10 +40,22 @@
       "description": "Demonstrates the dropdown preference type.",
       "default": "purple",
       "data": [
-        { "value": "purple", "title": "Purple" },
-        { "value": "blue", "title": "Blue" },
-        { "value": "green", "title": "Green" },
-        { "value": "orange", "title": "Orange" }
+        {
+          "value": "purple",
+          "title": "Purple"
+        },
+        {
+          "value": "blue",
+          "title": "Blue"
+        },
+        {
+          "value": "green",
+          "title": "Green"
+        },
+        {
+          "value": "orange",
+          "title": "Orange"
+        }
       ]
     },
     {
