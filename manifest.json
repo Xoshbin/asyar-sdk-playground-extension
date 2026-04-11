@@ -1,14 +1,16 @@
 {
   "id": "org.asyar.sdk-playground",
   "name": "SDK Playground",
-  "version": "1.0.0",
-  "description": "Developer playground for testing Asyar SDK services in a Tier 2 extension",
+  "version": "1.1.0",
+  "description": "Developer playground demonstrating every Asyar SDK service in a Tier 2 extension",
   "author": "Developer",
   "main": "dist/index.js",
   "searchable": true,
   "icon": "🧪",
   "type": "view",
   "defaultView": "DefaultView",
+  "asyarSdk": "^1.11.0",
+  "minAppVersion": "1.0.0",
   "permissions": [
     "selection:read",
     "clipboard:read",
@@ -23,11 +25,55 @@
     "fs:write",
     "extension:invoke"
   ],
+  "preferences": [
+    {
+      "name": "displayName",
+      "type": "textfield",
+      "title": "Display name",
+      "description": "Shown on the Preferences tab to demonstrate textfield values.",
+      "default": "Asyar Developer",
+      "placeholder": "Your name"
+    },
+    {
+      "name": "accentColor",
+      "type": "dropdown",
+      "title": "Accent color",
+      "description": "Demonstrates the dropdown preference type.",
+      "default": "purple",
+      "data": [
+        { "value": "purple", "title": "Purple" },
+        { "value": "blue", "title": "Blue" },
+        { "value": "green", "title": "Green" },
+        { "value": "orange", "title": "Orange" }
+      ]
+    },
+    {
+      "name": "logVerbosely",
+      "type": "checkbox",
+      "title": "Verbose logging",
+      "description": "Demonstrates the checkbox preference type.",
+      "default": false
+    },
+    {
+      "name": "maxResults",
+      "type": "number",
+      "title": "Max search results",
+      "description": "Demonstrates the number preference type.",
+      "default": 10
+    },
+    {
+      "name": "apiKey",
+      "type": "password",
+      "title": "Test API key",
+      "description": "Demonstrates password encryption at rest. Never leaves this device.",
+      "placeholder": "sk-..."
+    }
+  ],
   "commands": [
     {
       "id": "open",
       "name": "Open SDK Playground",
-      "description": "Test Asyar SDK services in a sandboxed Tier 2 extension",
+      "description": "Exercise every SDK service in a sandboxed Tier 2 extension",
       "resultType": "view",
       "icon": "🧪"
     },

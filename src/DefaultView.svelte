@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { ExtensionContext } from 'asyar-sdk';
   import FeedbackSection from './sections/FeedbackSection.svelte';
   import SelectionSection from './sections/SelectionSection.svelte';
   import ClipboardSection from './sections/ClipboardSection.svelte';
@@ -11,10 +12,17 @@
   import FileManagerSection from './sections/FileManagerSection.svelte';
   import InteropSection from './sections/InteropSection.svelte';
   import SchedulingSection from './sections/SchedulingSection.svelte';
+  import PreferencesSection from './sections/PreferencesSection.svelte';
 
-  let activeTab = $state('feedback');
+  interface Props {
+    context: ExtensionContext;
+  }
+  let { context }: Props = $props();
+
+  let activeTab = $state('preferences');
 
   const tabs = [
+    { id: 'preferences', label: 'Preferences', icon: '⚙️' },
     { id: 'feedback',    label: 'Feedback',    icon: '🍞' },
     { id: 'selection',   label: 'Selection',   icon: '✂️' },
     { id: 'clipboard',   label: 'Clipboard',   icon: '📋' },
@@ -47,7 +55,9 @@
 
   <!-- Content -->
   <div class="content">
-    {#if activeTab === 'feedback'}
+    {#if activeTab === 'preferences'}
+      <PreferencesSection {context} />
+    {:else if activeTab === 'feedback'}
       <FeedbackSection />
     {:else if activeTab === 'selection'}
       <SelectionSection />
