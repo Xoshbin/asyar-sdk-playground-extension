@@ -24,7 +24,8 @@
     "fs:write",
     "extension:invoke",
     "cache:read",
-    "cache:write"
+    "cache:write",
+    "application:read"
   ],
   "preferences": [
     {

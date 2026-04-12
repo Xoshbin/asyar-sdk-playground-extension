@@ -14,6 +14,7 @@ import type {
   IFileManagerService,
   IInteropService,
   ICacheService,
+  IApplicationService,
 } from 'asyar-sdk';
 import { svc, scheduling } from './store';
 import DefaultView from './DefaultView.svelte';
@@ -35,6 +36,7 @@ class SDKPlaygroundExtension implements Extension {
     svc.fileManager  = context.getService<IFileManagerService>('FileManagerService');
     svc.interop      = context.getService<IInteropService>('InteropService');
     svc.cache        = context.getService<ICacheService>('CacheService');
+    svc.application  = context.getService<IApplicationService>('ApplicationService');
     console.log('[SDKPlayground] Initialized');
   }
 

@@ -11,6 +11,7 @@ import type {
   IFileManagerService,
   IInteropService,
   ICacheService,
+  IApplicationService,
 } from 'asyar-sdk';
 
 /**
@@ -32,6 +33,7 @@ export const svc = {
   fileManager:  null as unknown as IFileManagerService,
   interop:      null as unknown as IInteropService,
   cache:        null as unknown as ICacheService,
+  application:  null as unknown as IApplicationService,
 };
 
 // ── Background scheduling tick log ──────────────────────────────────────────

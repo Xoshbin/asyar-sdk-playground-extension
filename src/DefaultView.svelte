@@ -14,6 +14,7 @@
   import SchedulingSection from './sections/SchedulingSection.svelte';
   import CacheSection from './sections/CacheSection.svelte';
   import PreferencesSection from './sections/PreferencesSection.svelte';
+  import ApplicationSection from './sections/ApplicationSection.svelte';
 
   interface Props {
     context: ExtensionContext;
@@ -37,6 +38,7 @@
     { id: 'interop',     label: 'Interop',     icon: '🔗' },
     { id: 'scheduling',  label: 'Scheduling',  icon: '⏱️' },
     { id: 'cache',       label: 'Cache',       icon: '⚡' },
+    { id: 'application', label: 'Application', icon: '🎯' },
   ];
 </script>
 
@@ -85,6 +87,8 @@
       <SchedulingSection />
     {:else if activeTab === 'cache'}
       <CacheSection />
+    {:else if activeTab === 'application'}
+      <ApplicationSection />
     {/if}
   </div>
 </div>
