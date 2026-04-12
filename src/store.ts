@@ -10,6 +10,7 @@ import type {
   IShellService,
   IFileManagerService,
   IInteropService,
+  ICacheService,
 } from 'asyar-sdk';
 
 /**
@@ -30,6 +31,7 @@ export const svc = {
   shell:        null as unknown as IShellService,
   fileManager:  null as unknown as IFileManagerService,
   interop:      null as unknown as IInteropService,
+  cache:        null as unknown as ICacheService,
 };
 
 // ── Background scheduling tick log ──────────────────────────────────────────

@@ -32,7 +32,7 @@
   <header class="section-header">
     <div>
       <span class="section-title">Storage Service</span>
-      <span class="section-desc">Persistent key-value storage scoped to this extension</span>
+      <span class="section-desc">Persistent key-value storage synced across devices. Use <b>Cache</b> for transient data.</span>
     </div>
   </header>
 

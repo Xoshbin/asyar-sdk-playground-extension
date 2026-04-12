@@ -12,6 +12,7 @@
   import FileManagerSection from './sections/FileManagerSection.svelte';
   import InteropSection from './sections/InteropSection.svelte';
   import SchedulingSection from './sections/SchedulingSection.svelte';
+  import CacheSection from './sections/CacheSection.svelte';
   import PreferencesSection from './sections/PreferencesSection.svelte';
 
   interface Props {
@@ -35,6 +36,7 @@
     { id: 'filemanager', label: 'File Manager', icon: '📁' },
     { id: 'interop',     label: 'Interop',     icon: '🔗' },
     { id: 'scheduling',  label: 'Scheduling',  icon: '⏱️' },
+    { id: 'cache',       label: 'Cache',       icon: '⚡' },
   ];
 </script>
 
@@ -81,6 +83,8 @@
       <InteropSection />
     {:else if activeTab === 'scheduling'}
       <SchedulingSection />
+    {:else if activeTab === 'cache'}
+      <CacheSection />
     {/if}
   </div>
 </div>

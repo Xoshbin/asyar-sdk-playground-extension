@@ -22,7 +22,9 @@
     "shell:spawn",
     "fs:read",
     "fs:write",
-    "extension:invoke"
+    "extension:invoke",
+    "cache:read",
+    "cache:write"
   ],
   "preferences": [
     {
