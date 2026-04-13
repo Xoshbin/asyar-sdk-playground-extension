@@ -16,6 +16,7 @@ import type {
   ICacheService,
   IApplicationService,
   ICommandService,
+  IActionService,
 } from 'asyar-sdk';
 import { svc, scheduling } from './store';
 import DefaultView from './DefaultView.svelte';
@@ -48,6 +49,21 @@ class SDKPlaygroundExtension implements Extension {
     svc.cache        = context.getService<ICacheService>('CacheService');
     svc.application  = context.getService<IApplicationService>('ApplicationService');
     svc.command      = context.getService<ICommandService>('CommandService');
+
+    // Register manifest-declared action handlers. The host registered these
+    // actions from manifest.json; we wire the execute logic here so the relay
+    // path (asyar:action:execute → ExtensionBridge → handler) works.
+    const actionService = context.getService<IActionService>('ActionService');
+    actionService.registerActionHandler('send-notification', async () => {
+      await svc.notification.notify({
+        title: 'SDK Playground',
+        body: 'Manifest-declared action fired from the ⌘K drawer',
+      });
+    });
+    actionService.registerActionHandler('show-hud', async () => {
+      await svc.feedback.showHUD('👋 HUD fired from ⌘K manifest-declared action');
+    });
+
     console.log('[SDKPlayground] Initialized');
   }
 

@@ -83,6 +83,22 @@
       "placeholder": "sk-..."
     }
   ],
+  "actions": [
+    {
+      "id": "send-notification",
+      "title": "Fire Test Notification",
+      "description": "Send a system notification — demonstrates INotificationService from root search",
+      "icon": "🔔",
+      "category": "SDK Playground"
+    },
+    {
+      "id": "show-hud",
+      "title": "Show HUD",
+      "description": "Display a brief HUD overlay — demonstrates IFeedbackService from root search",
+      "icon": "💬",
+      "category": "SDK Playground"
+    }
+  ],
   "commands": [
     {
       "id": "open",
