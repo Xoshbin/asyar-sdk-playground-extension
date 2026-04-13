@@ -12,11 +12,14 @@
 //      context with the iframe's ExtensionBridge, so the preferences
 //      listener can find it and call setPreferences(bundle) on the
 //      live context when the host replies to asyar:extension:loaded.
-//   4. Run extension.initialize(context) — resolve service proxies and
+//   4. Register the extension implementation with ExtensionBridge so the
+//      bridge can dispatch `asyar:command:execute` messages to it. Without
+//      this, no-view commands (e.g. scheduled ticks) are silently dropped.
+//   5. Run extension.initialize(context) — resolve service proxies and
 //      wire up any cross-cutting state (e.g. svc.* in this playground).
-//   5. Mount the Svelte view component, passing `context` (or resolved
+//   6. Mount the Svelte view component, passing `context` (or resolved
 //      services) as props so children never construct their own context.
-//   6. Post asyar:extension:loaded to the host. The host replies with
+//   7. Post asyar:extension:loaded to the host. The host replies with
 //      asyar:event:preferences:set-all containing the extension's
 //      resolved preferences bundle. ExtensionBridge routes the message
 //      to context.setPreferences, which installs a frozen snapshot and
@@ -29,8 +32,9 @@
 // ───────────────────────────────────────────────────────────────────────────
 
 import { mount } from 'svelte';
-import { ExtensionContext } from 'asyar-sdk';
+import { ExtensionContext, ExtensionBridge } from 'asyar-sdk';
 import extension, { DefaultView } from './index';
+import manifest from '../manifest.json';
 
 // The hostname of asyar-extension://org.asyar.sdk-playground/... is the extension ID
 const extensionId = window.location.hostname || 'org.asyar.sdk-playground';
@@ -38,6 +42,14 @@ const extensionId = window.location.hostname || 'org.asyar.sdk-playground';
 (async () => {
   const context = new ExtensionContext();
   context.setExtensionId(extensionId);
+
+  // Register with ExtensionBridge so it can dispatch:
+  //   - asyar:command:execute → extension.executeCommand(commandId, args)
+  // Without this, the bridge has no implementation to forward messages to and
+  // scheduled tick commands (no-view) are silently dropped.
+  const bridge = ExtensionBridge.getInstance();
+  bridge.registerManifest(manifest as any);
+  bridge.registerExtensionImplementation(extensionId, extension);
 
   // Resolve services and populate svc.* before mounting the view so
   // components can use svc.feedback, svc.storage, etc. synchronously.

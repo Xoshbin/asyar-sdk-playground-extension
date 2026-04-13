@@ -15,9 +15,19 @@ import type {
   IInteropService,
   ICacheService,
   IApplicationService,
+  ICommandService,
 } from 'asyar-sdk';
 import { svc, scheduling } from './store';
 import DefaultView from './DefaultView.svelte';
+
+function formatTime(d: Date): string {
+  return d.toLocaleTimeString(undefined, {
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+}
 
 class SDKPlaygroundExtension implements Extension {
   private extensionManager?: IExtensionManager;
@@ -37,6 +47,7 @@ class SDKPlaygroundExtension implements Extension {
     svc.interop      = context.getService<IInteropService>('InteropService');
     svc.cache        = context.getService<ICacheService>('CacheService');
     svc.application  = context.getService<IApplicationService>('ApplicationService');
+    svc.command      = context.getService<ICommandService>('CommandService');
     console.log('[SDKPlayground] Initialized');
   }
 
@@ -52,6 +63,13 @@ class SDKPlaygroundExtension implements Extension {
     }
     if (commandId === 'tick-test') {
       scheduling.recordTick(args ?? {});
+      const log = scheduling.log;
+      const count = log.length;
+      const last = log[count - 1];
+      const subtitle = last
+        ? `Ticked ${count} times · Last: ${formatTime(last.timestamp)}`
+        : undefined;
+      svc.command?.updateCommandMetadata('tick-test', { subtitle }).catch(console.error);
     }
   }
 
