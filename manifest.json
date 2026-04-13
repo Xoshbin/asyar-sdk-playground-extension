@@ -105,7 +105,16 @@
       "name": "Open SDK Playground",
       "description": "Exercise every SDK service in a sandboxed Tier 2 extension",
       "resultType": "view",
-      "icon": "🧪"
+      "icon": "🧪",
+      "actions": [
+        {
+          "id": "reset-tick-log",
+          "title": "Reset Tick Log",
+          "description": "Clear the scheduling tick history shown in the Scheduling section",
+          "icon": "🗑️",
+          "category": "SDK Playground"
+        }
+      ]
     },
     {
       "id": "tick-test",
@@ -114,7 +123,16 @@
       "resultType": "no-view",
       "schedule": {
         "intervalSeconds": 60
-      }
+      },
+      "actions": [
+        {
+          "id": "trigger-now",
+          "title": "Trigger Tick Now",
+          "description": "Manually fire the scheduled tick command outside its interval",
+          "icon": "▶️",
+          "category": "SDK Playground"
+        }
+      ]
     }
   ]
 }

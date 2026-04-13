@@ -63,6 +63,14 @@ class SDKPlaygroundExtension implements Extension {
     actionService.registerActionHandler('show-hud', async () => {
       await svc.feedback.showHUD('👋 HUD fired from ⌘K manifest-declared action');
     });
+    actionService.registerActionHandler('reset-tick-log', async () => {
+      scheduling.log = [];
+      await svc.feedback.showHUD('🗑️ Tick log cleared');
+    });
+    actionService.registerActionHandler('trigger-now', async () => {
+      await this.executeCommand('tick-test', { scheduledTick: false });
+      await svc.feedback.showHUD('▶️ Tick fired manually');
+    });
 
     console.log('[SDKPlayground] Initialized');
   }
