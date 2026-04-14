@@ -1,7 +1,7 @@
 {
   "id": "org.asyar.sdk-playground",
   "name": "SDK Playground",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Developer playground demonstrating every Asyar SDK service in a Tier 2 extension",
   "author": "Developer",
   "main": "dist/index.js",
