@@ -34,26 +34,26 @@ class SDKPlaygroundExtension implements Extension {
   private extensionManager?: IExtensionManager;
 
   async initialize(context: ExtensionContext) {
-    this.extensionManager = context.getService<IExtensionManager>('ExtensionManager');
-    svc.feedback     = context.getService<IFeedbackService>('FeedbackService');
-    svc.selection    = context.getService<ISelectionService>('SelectionService');
-    svc.clipboard    = context.getService<IClipboardHistoryService>('ClipboardHistoryService');
-    svc.notification = context.getService<INotificationService>('NotificationService');
-    svc.storage      = context.getService<IStorageService>('StorageService');
-    svc.network      = context.getService<INetworkService>('NetworkService');
-    svc.ai           = context.getService<IAIService>('AIService');
-    svc.oauth        = context.getService<IOAuthService>('OAuthService');
-    svc.shell        = context.getService<IShellService>('ShellService');
-    svc.fileManager  = context.getService<IFileManagerService>('FileManagerService');
-    svc.interop      = context.getService<IInteropService>('InteropService');
-    svc.cache        = context.getService<ICacheService>('CacheService');
-    svc.application  = context.getService<IApplicationService>('ApplicationService');
-    svc.command      = context.getService<ICommandService>('CommandService');
+    this.extensionManager = context.getService<IExtensionManager>('extensions');
+    svc.feedback     = context.getService<IFeedbackService>('feedback');
+    svc.selection    = context.getService<ISelectionService>('selection');
+    svc.clipboard    = context.getService<IClipboardHistoryService>('clipboard');
+    svc.notification = context.getService<INotificationService>('notifications');
+    svc.storage      = context.getService<IStorageService>('storage');
+    svc.network      = context.getService<INetworkService>('network');
+    svc.ai           = context.getService<IAIService>('ai');
+    svc.oauth        = context.getService<IOAuthService>('oauth');
+    svc.shell        = context.getService<IShellService>('shell');
+    svc.fileManager  = context.getService<IFileManagerService>('fs');
+    svc.interop      = context.getService<IInteropService>('interop');
+    svc.cache        = context.getService<ICacheService>('cache');
+    svc.application  = context.getService<IApplicationService>('application');
+    svc.command      = context.getService<ICommandService>('commands');
 
     // Register manifest-declared action handlers. The host registered these
     // actions from manifest.json; we wire the execute logic here so the relay
     // path (asyar:action:execute → ExtensionBridge → handler) works.
-    const actionService = context.getService<IActionService>('ActionService');
+    const actionService = context.getService<IActionService>('actions');
     actionService.registerActionHandler('send-notification', async () => {
       await svc.notification.notify({
         title: 'SDK Playground',
