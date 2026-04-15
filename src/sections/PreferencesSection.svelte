@@ -26,16 +26,17 @@
   let { context }: Props = $props();
 
   // Cache the snapshot into reactive local state so the UI updates when
-  // preferences change. The alternative — reading context.preferences.X
-  // inside each template expression — also works, but without an $effect
-  // or subscription the template wouldn't re-evaluate on change.
-  let snapshot = $state<Record<string, unknown>>({ ...context.preferences });
+  // preferences change. The alternative — reading
+  // context.preferences.values.X inside each template expression — also
+  // works, but without an $effect or subscription the template wouldn't
+  // re-evaluate on change.
+  let snapshot = $state<Record<string, unknown>>({ ...context.preferences.values });
 
   const unsubscribe = context.onPreferencesChanged(() => {
-    // The callback fires AFTER context.preferences is replaced with the
-    // new frozen snapshot. Spread it into our local state so Svelte
-    // picks up the change.
-    snapshot = { ...context.preferences };
+    // The callback fires AFTER context.preferences.values is replaced
+    // with the new frozen snapshot. Spread it into our local state so
+    // Svelte picks up the change.
+    snapshot = { ...context.preferences.values };
   });
 
   onDestroy(() => unsubscribe());
