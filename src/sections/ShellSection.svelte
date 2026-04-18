@@ -1,11 +1,13 @@
 <script lang="ts">
   import { svc } from '../store';
-  import type { ShellHandle } from 'asyar-sdk';
+  import type { ShellHandle, ShellDescriptor } from 'asyar-sdk';
 
   interface OutputLine {
-    kind: 'stdout' | 'stderr' | 'exit' | 'error' | 'aborted';
+    kind: 'stdout' | 'stderr' | 'exit' | 'error' | 'aborted' | 'info';
     text: string;
   }
+
+  const STORAGE_KEY = 'playground.lastSpawnId';
 
   const presets = [
     { icon: '📢', name: 'echo',         program: 'echo',  args: 'Hello from Asyar' },
@@ -14,40 +16,41 @@
     { icon: '🌐', name: 'curl version', program: 'curl',  args: '--version' },
   ];
 
-  let program  = $state('echo');
-  let args     = $state('Hello from Asyar');
+  let program  = $state('ping');
+  let args     = $state('-c 30 127.0.0.1');
   let lines    = $state<OutputLine[]>([]);
-  let running  = $state(false);
   let handle: ShellHandle | null = null;
+  let currentSpawnId = $state<string | null>(null);
+  let running  = $state(false);
+  let detached = $state(false);
   let terminal = $state<HTMLElement | null>(null);
 
+  let liveSpawns = $state<ShellDescriptor[]>([]);
+  let lastListError = $state<string | null>(null);
+
   $effect(() => {
-    // scroll terminal to bottom whenever lines change
     lines;
     if (terminal) terminal.scrollTop = terminal.scrollHeight;
   });
 
-  function spawn(prog = program, argv = args) {
-    if (running) return;
-    lines = [];
+  function wireHandle(h: ShellHandle, labelOnAttach: string | null = null) {
+    handle = h;
+    currentSpawnId = h.spawnId;
     running = true;
+    detached = false;
+    if (labelOnAttach) {
+      lines = [...lines, { kind: 'info', text: labelOnAttach }];
+    }
 
-    handle = svc.shell.spawn({
-      program: prog,
-      args: argv.trim() ? argv.trim().split(/\s+/) : [],
-    });
-
-    handle.onChunk((chunk) => {
+    h.onChunk((chunk) => {
       lines = [...lines, { kind: chunk.stream, text: chunk.data }];
     });
-
-    handle.onDone((exitCode) => {
+    h.onDone((exitCode) => {
       lines = [...lines, { kind: 'exit', text: `[done — exit ${exitCode ?? '?'}]` }];
       running = false;
       handle = null;
     });
-
-    handle.onError(({ code, message }) => {
+    h.onError(({ code, message }) => {
       if (code === 'ABORTED') {
         lines = [...lines, { kind: 'aborted', text: '[aborted]' }];
       } else {
@@ -56,6 +59,18 @@
       running = false;
       handle = null;
     });
+  }
+
+  function spawn(prog = program, argv = args) {
+    if (running) return;
+    lines = [];
+    const h = svc.shell.spawn({
+      program: prog,
+      args: argv.trim() ? argv.trim().split(/\s+/) : [],
+    });
+    wireHandle(h, `[spawned — spawnId=${h.spawnId}]`);
+    // Remember the id so we can demonstrate reattach after detach.
+    svc.storage.set(STORAGE_KEY, h.spawnId).catch(() => {});
   }
 
   function abort() {
@@ -67,13 +82,59 @@
     args = preset.args;
     spawn(preset.program, preset.args);
   }
+
+  /**
+   * Drop the local handle WITHOUT aborting the process. Simulates an
+   * iframe reload that loses its SDK-side listener but leaves the child
+   * process alive in the launcher-side registry. After this the terminal
+   * stops receiving chunks — attach() is the recovery path.
+   */
+  function detach() {
+    if (!handle) return;
+    handle = null;
+    running = false;
+    detached = true;
+    lines = [
+      ...lines,
+      {
+        kind: 'info',
+        text: `[detached — handle dropped, process still alive. spawnId=${currentSpawnId}]`,
+      },
+    ];
+  }
+
+  async function refreshList() {
+    lastListError = null;
+    try {
+      liveSpawns = await svc.shell.list();
+    } catch (err) {
+      lastListError = err instanceof Error ? err.message : String(err);
+      liveSpawns = [];
+    }
+  }
+
+  function attachTo(spawnId: string) {
+    if (running) return;
+    lines = [];
+    const h = svc.shell.attach(spawnId);
+    wireHandle(h, `[attached to ${spawnId} — resuming stream]`);
+  }
+
+  async function attachToSaved() {
+    const saved = await svc.storage.get<string>(STORAGE_KEY);
+    if (!saved) {
+      lines = [...lines, { kind: 'info', text: '[no saved spawnId yet — run a spawn first]' }];
+      return;
+    }
+    attachTo(saved);
+  }
 </script>
 
 <div class="section">
   <header class="section-header">
     <div>
       <span class="section-title">Shell Service</span>
-      <span class="section-desc">Spawn OS processes and stream stdout/stderr via shell.spawn()</span>
+      <span class="section-desc">Spawn, detach, list, reattach — exercises shell.spawn / shell.list / shell.attach</span>
     </div>
   </header>
 
@@ -84,7 +145,7 @@
       <input
         class="field-input"
         bind:value={program}
-        placeholder="e.g. ffmpeg"
+        placeholder="e.g. ping"
         disabled={running}
       />
     </div>
@@ -99,9 +160,16 @@
     </div>
   </div>
 
-  <!-- Spawn / Abort -->
+  <!-- Spawn / Detach / Abort -->
   <div class="btn-group">
     {#if running}
+      <button class="action-btn" onclick={detach}>
+        <span class="btn-icon">🔌</span>
+        <span class="btn-text">
+          <span class="btn-name">Detach Handle</span>
+          <span class="btn-hint">drop listener, keep process alive</span>
+        </span>
+      </button>
       <button class="action-btn danger" onclick={abort}>
         <span class="btn-icon">⏹</span>
         <span class="btn-text">
@@ -117,6 +185,15 @@
           <span class="btn-hint">shell.spawn({'{ program, args }'})</span>
         </span>
       </button>
+      {#if detached && currentSpawnId}
+        <button class="action-btn" onclick={() => attachTo(currentSpawnId!)}>
+          <span class="btn-icon">🔁</span>
+          <span class="btn-text">
+            <span class="btn-name">Reattach</span>
+            <span class="btn-hint">shell.attach({currentSpawnId.slice(0, 8)}…)</span>
+          </span>
+        </button>
+      {/if}
     {/if}
   </div>
 
@@ -134,12 +211,64 @@
     {/each}
   </div>
 
+  <!-- List + Attach demo -->
+  <div class="presets-label">RE-ATTACH DEMO</div>
+  <div class="btn-group presets">
+    <button class="action-btn" onclick={refreshList}>
+      <span class="btn-icon">📋</span>
+      <span class="btn-text">
+        <span class="btn-name">List Live Spawns</span>
+        <span class="btn-hint">shell.list()</span>
+      </span>
+    </button>
+    <button class="action-btn" onclick={attachToSaved} disabled={running}>
+      <span class="btn-icon">💾</span>
+      <span class="btn-text">
+        <span class="btn-name">Reattach to Saved</span>
+        <span class="btn-hint">shell.attach(storage.get())</span>
+      </span>
+    </button>
+  </div>
+
+  {#if lastListError}
+    <div class="list-error">⚠ {lastListError}</div>
+  {/if}
+
+  {#if liveSpawns.length > 0}
+    <div class="spawn-list">
+      {#each liveSpawns as descriptor}
+        <div class="spawn-row">
+          <div class="spawn-meta">
+            <div class="spawn-title">
+              <span class="spawn-program">{descriptor.program}</span>
+              <span class="spawn-args">{descriptor.args.join(' ')}</span>
+            </div>
+            <div class="spawn-sub">
+              pid {descriptor.pid} · spawnId {descriptor.spawnId.slice(0, 8)}… · started {new Date(descriptor.startedAt).toLocaleTimeString()}
+            </div>
+          </div>
+          <button
+            class="action-btn small"
+            onclick={() => attachTo(descriptor.spawnId)}
+            disabled={running}
+          >
+            Attach
+          </button>
+        </div>
+      {/each}
+    </div>
+  {:else if lastListError === null}
+    <div class="list-empty">No live spawns (press List to refresh).</div>
+  {/if}
+
   <!-- Streaming terminal output -->
   <div class="output-area">
-    <span class="output-label">OUTPUT{running ? ' — running…' : ''}</span>
+    <span class="output-label">
+      OUTPUT{running ? ' — streaming…' : detached ? ' — detached' : ''}
+    </span>
     {#if lines.length === 0 && !running}
       <div class="terminal muted-terminal">
-        <span class="muted">Press Spawn or a preset to run a process</span>
+        <span class="muted">Spawn a process, detach, list, then reattach.</span>
       </div>
     {:else}
       <div class="terminal" bind:this={terminal}>
@@ -182,6 +311,74 @@
     flex-wrap: wrap;
   }
 
+  .spawn-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0 16px;
+  }
+
+  .spawn-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+  }
+
+  .spawn-meta {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .spawn-title {
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+    font-size: 12px;
+  }
+
+  .spawn-program {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .spawn-args {
+    color: var(--text-tertiary);
+    font-family: 'SF Mono', 'Menlo', monospace;
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .spawn-sub {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    font-family: 'SF Mono', 'Menlo', monospace;
+    margin-top: 2px;
+  }
+
+  .action-btn.small {
+    padding: 4px 10px;
+    font-size: 11px;
+    min-width: auto;
+  }
+
+  .list-empty,
+  .list-error {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    padding: 4px 16px;
+  }
+
+  .list-error {
+    color: #e05252;
+  }
+
   .terminal {
     font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
     font-size: 11px;
@@ -208,6 +405,7 @@
   .line.exit    { color: var(--accent-primary); opacity: 0.7; margin-top: 4px; }
   .line.error   { color: #e05252; margin-top: 4px; }
   .line.aborted { color: var(--text-tertiary); margin-top: 4px; }
+  .line.info    { color: var(--accent-primary); opacity: 0.85; }
   .line.cursor  { color: var(--accent-primary); animation: blink 1s step-end infinite; }
 
   @keyframes blink {
