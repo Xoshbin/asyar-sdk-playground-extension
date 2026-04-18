@@ -16,6 +16,7 @@ import type {
   IPowerService,
   ISystemEventsService,
   IStatusBarService,
+  ITimerService,
 } from 'asyar-sdk';
 
 /**
@@ -42,6 +43,7 @@ export const svc = {
   power:        null as unknown as IPowerService,
   systemEvents: null as unknown as ISystemEventsService,
   statusBar:    null as unknown as IStatusBarService,
+  timers:       null as unknown as ITimerService,
 };
 
 // ── Status-bar (tray) click log ─────────────────────────────────────────────
@@ -176,5 +178,46 @@ export const scheduling = {
   subscribe(fn: (e: TickEvent) => void): () => void {
     tickListeners.add(fn);
     return () => tickListeners.delete(fn);
+  },
+};
+
+// ── One-shot timer fires log ────────────────────────────────────────────────
+
+export interface TimerFireEntry {
+  timestamp: Date;
+  commandId: string;
+  args: Record<string, unknown>;
+  /** Human-readable label shown in the Timers section log. */
+  note: string;
+}
+
+const timerFireListeners = new Set<() => void>();
+
+function fireTimerListeners() {
+  timerFireListeners.forEach((fn) => fn());
+}
+
+/**
+ * Module-scoped log of one-shot timer fires. The Timers section observes
+ * this to show when a scheduled timer actually fires end-to-end (Rust
+ * scheduler → Tauri event → launcher bridge → iframe postMessage →
+ * extension executeCommand).
+ */
+export const timerFires = {
+  log: [] as TimerFireEntry[],
+
+  record(entry: TimerFireEntry) {
+    timerFires.log = [...timerFires.log, entry].slice(-25);
+    fireTimerListeners();
+  },
+
+  clear() {
+    timerFires.log = [];
+    fireTimerListeners();
+  },
+
+  subscribe(fn: () => void): () => void {
+    timerFireListeners.add(fn);
+    return () => timerFireListeners.delete(fn);
   },
 };

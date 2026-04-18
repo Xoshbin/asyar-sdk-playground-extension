@@ -20,8 +20,9 @@ import type {
   IPowerService,
   ISystemEventsService,
   IStatusBarService,
+  ITimerService,
 } from 'asyar-sdk';
-import { svc, scheduling, notifActions } from './store';
+import { svc, scheduling, notifActions, timerFires } from './store';
 import DefaultView from './DefaultView.svelte';
 
 function formatTime(d: Date): string {
@@ -55,6 +56,7 @@ class SDKPlaygroundExtension implements Extension {
     svc.power        = context.getService<IPowerService>('power');
     svc.systemEvents = context.getService<ISystemEventsService>('systemEvents');
     svc.statusBar    = context.getService<IStatusBarService>('statusBar');
+    svc.timers       = context.getService<ITimerService>('timers');
 
     // Register manifest-declared action handlers. The host registered these
     // actions from manifest.json; we wire the execute logic here so the relay
@@ -112,6 +114,19 @@ class SDKPlaygroundExtension implements Extension {
         note,
       });
       svc.feedback?.showHUD(`Notification action: ${note}`).catch(console.error);
+    }
+    if (commandId === 'timer-ring' || commandId === 'timer-snooze') {
+      const label =
+        commandId === 'timer-ring'
+          ? `⏰ ring (${(args as any)?.label ?? 'no label'})`
+          : `💤 snooze — rescheduled ${(args as any)?.minutes ?? '?'} min`;
+      timerFires.record({
+        timestamp: new Date(),
+        commandId,
+        args: args ?? {},
+        note: label,
+      });
+      svc.feedback?.showHUD(`Timer: ${label}`).catch(console.error);
     }
   }
 

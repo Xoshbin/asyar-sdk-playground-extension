@@ -1,7 +1,7 @@
 {
   "id": "org.asyar.sdk-playground",
   "name": "SDK Playground",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Developer playground demonstrating every Asyar SDK service in a Tier 2 extension",
   "author": "Developer",
   "main": "dist/index.js",
@@ -28,7 +28,10 @@
     "application:read",
     "app:frontmost-watch",
     "power:inhibit",
-    "systemEvents:read"
+    "systemEvents:read",
+    "timers:schedule",
+    "timers:cancel",
+    "timers:list"
   ],
   "preferences": [
     {
@@ -156,6 +159,18 @@
       "id": "notif-stop",
       "name": "Coffee — stop",
       "description": "Fired by the Stop button on the notification demo. Records the event in the Notifications section log.",
+      "resultType": "no-view"
+    },
+    {
+      "id": "timer-ring",
+      "name": "Timer — ring",
+      "description": "Fired by a one-shot timer scheduled from the Timers section. Records the fire in the Timers log.",
+      "resultType": "no-view"
+    },
+    {
+      "id": "timer-snooze",
+      "name": "Timer — snooze",
+      "description": "Fired by the snooze demo timer. Records the fire and the original schedule args in the Timers log.",
       "resultType": "no-view"
     }
   ]

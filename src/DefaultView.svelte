@@ -19,6 +19,7 @@
   import PowerSection from './sections/PowerSection.svelte';
   import SystemEventsSection from './sections/SystemEventsSection.svelte';
   import StatusBarSection from './sections/StatusBarSection.svelte';
+  import TimersSection from './sections/TimersSection.svelte';
 
   interface Props {
     context: ExtensionContext;
@@ -47,6 +48,7 @@
     { id: 'power',       label: 'Power',       icon: '☕' },
     { id: 'sysevents',   label: 'System Events', icon: '📡' },
     { id: 'statusbar',   label: 'Status Bar',  icon: '🧭' },
+    { id: 'timers',      label: 'Timers',      icon: '⏰' },
   ];
 </script>
 
@@ -105,6 +107,8 @@
       <SystemEventsSection />
     {:else if activeTab === 'statusbar'}
       <StatusBarSection />
+    {:else if activeTab === 'timers'}
+      <TimersSection />
     {/if}
   </div>
 </div>
