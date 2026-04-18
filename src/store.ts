@@ -44,6 +44,8 @@ export interface TickEvent {
   timestamp: Date;
   /** true when fired by the platform timer, false when triggered manually */
   isScheduled: boolean;
+  /** Which scheduled command produced this tick (e.g. 'tick-test' or 'tick-test-fast') */
+  commandId: string;
   args: Record<string, any>;
 }
 
@@ -52,11 +54,12 @@ const tickListeners = new Set<(e: TickEvent) => void>();
 export const scheduling = {
   log: [] as TickEvent[],
 
-  /** Called by the extension's executeCommand() whenever 'tick-test' runs. */
-  recordTick(args: Record<string, any>) {
+  /** Called by the extension's executeCommand() whenever a scheduled tick runs. */
+  recordTick(commandId: string, args: Record<string, any>) {
     const event: TickEvent = {
       timestamp: new Date(),
       isScheduled: args?.scheduledTick === true,
+      commandId,
       args,
     };
     // Keep at most 50 entries

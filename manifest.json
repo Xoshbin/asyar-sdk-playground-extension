@@ -1,7 +1,7 @@
 {
   "id": "org.asyar.sdk-playground",
   "name": "SDK Playground",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Developer playground demonstrating every Asyar SDK service in a Tier 2 extension",
   "author": "Developer",
   "main": "dist/index.js",
@@ -133,6 +133,15 @@
           "category": "SDK Playground"
         }
       ]
+    },
+    {
+      "id": "tick-test-fast",
+      "name": "Scheduling Tick Test (10s floor)",
+      "description": "End-to-end probe at the 10-second minimum interval — verifies sub-minute pollers traverse the full Rust→host→iframe pipeline",
+      "resultType": "no-view",
+      "schedule": {
+        "intervalSeconds": 10
+      }
     }
   ]
 }

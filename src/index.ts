@@ -85,15 +85,15 @@ class SDKPlaygroundExtension implements Extension {
       this.extensionManager?.navigateToView('org.asyar.sdk-playground/DefaultView');
       return { type: 'view', viewPath: 'org.asyar.sdk-playground/DefaultView' };
     }
-    if (commandId === 'tick-test') {
-      scheduling.recordTick(args ?? {});
+    if (commandId === 'tick-test' || commandId === 'tick-test-fast') {
+      scheduling.recordTick(commandId, args ?? {});
       const log = scheduling.log;
-      const count = log.length;
-      const last = log[count - 1];
+      const ticksForCommand = log.filter(t => t.commandId === commandId);
+      const last = ticksForCommand[ticksForCommand.length - 1];
       const subtitle = last
-        ? `Ticked ${count} times · Last: ${formatTime(last.timestamp)}`
+        ? `Ticked ${ticksForCommand.length} times · Last: ${formatTime(last.timestamp)}`
         : undefined;
-      svc.command?.updateCommandMetadata('tick-test', { subtitle }).catch(console.error);
+      svc.command?.updateCommandMetadata(commandId, { subtitle }).catch(console.error);
     }
   }
 

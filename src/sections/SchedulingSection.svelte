@@ -29,11 +29,11 @@
   function simulateTick() {
     // Fires the same code path that the platform scheduler uses,
     // but without the scheduledTick flag so it's distinguishable in the log.
-    scheduling.recordTick({ scheduledTick: false, source: 'manual' });
+    scheduling.recordTick('tick-test', { scheduledTick: false, source: 'manual' });
   }
 
   async function simulateAndToast() {
-    scheduling.recordTick({ scheduledTick: false, source: 'manual' });
+    scheduling.recordTick('tick-test', { scheduledTick: false, source: 'manual' });
     await svc.feedback.showToast({
       title: 'Tick recorded',
       message: 'Manual tick added to log (scheduledTick: false)',
@@ -46,19 +46,19 @@
   <header class="section-header">
     <div>
       <span class="section-title">Background Scheduling</span>
-      <span class="section-desc">executeCommand('tick-test') — fires every 60 s via manifest schedule</span>
+      <span class="section-desc">Two scheduled commands: tick-test (60 s) and tick-test-fast (10 s, the new floor)</span>
     </div>
   </header>
 
   <!-- Stats row -->
   <div class="stats-row">
     <div class="stat">
-      <span class="stat-value">{ticks.length}</span>
-      <span class="stat-label">Total ticks</span>
+      <span class="stat-value">{ticks.filter(t => t.commandId === 'tick-test' && t.isScheduled).length}</span>
+      <span class="stat-label">60 s ticks</span>
     </div>
     <div class="stat">
-      <span class="stat-value">{ticks.filter(t => t.isScheduled).length}</span>
-      <span class="stat-label">From scheduler</span>
+      <span class="stat-value">{ticks.filter(t => t.commandId === 'tick-test-fast' && t.isScheduled).length}</span>
+      <span class="stat-label">10 s ticks</span>
     </div>
     <div class="stat">
       <span class="stat-value">
@@ -97,7 +97,7 @@
     <div class="log-body" bind:this={log}>
       {#if ticks.length === 0}
         <div class="log-empty">
-          No ticks yet. Use "Simulate Tick" for an instant test, or wait 60 s for the platform scheduler to fire (look for scheduledTick: true).
+          No ticks yet. Use "Simulate Tick" for an instant test, or wait — tick-test-fast should fire within 10 s, tick-test within 60 s. Watch for the SCHEDULER badge to confirm a real platform tick.
         </div>
       {:else}
         {#each ticks as tick}
@@ -105,6 +105,9 @@
             <span class="tick-time">{formatTime(tick.timestamp)}</span>
             <span class="tick-badge" class:badge-scheduled={tick.isScheduled} class:badge-manual={!tick.isScheduled}>
               {tick.isScheduled ? 'SCHEDULER' : 'MANUAL'}
+            </span>
+            <span class="tick-cmd" class:cmd-fast={tick.commandId === 'tick-test-fast'}>
+              {tick.commandId === 'tick-test-fast' ? '10s' : '60s'}
             </span>
             <span class="tick-args">{JSON.stringify(tick.args)}</span>
           </div>
@@ -114,11 +117,12 @@
   </div>
 
   <p class="note">
-    The <code>tick-test</code> command in <code>manifest.json</code> declares
-    <code>schedule: {"{ intervalSeconds: 60 }"}</code>. The platform (Rust tokio) owns the timer —
-    your extension receives a normal <code>executeCommand()</code> call with
-    <code>{"{ scheduledTick: true }"}</code> in args. Scheduled ticks keep firing
-    whether or not the launcher window is visible.
+    Two commands in <code>manifest.json</code> declare schedules:
+    <code>tick-test</code> at <code>intervalSeconds: 60</code> and
+    <code>tick-test-fast</code> at <code>intervalSeconds: 10</code> — the new platform floor.
+    The platform (Rust tokio) owns both timers; your extension receives normal
+    <code>executeCommand()</code> calls with <code>{"{ scheduledTick: true }"}</code> in args.
+    Scheduled ticks keep firing whether or not the launcher window is visible.
   </p>
 </div>
 
@@ -249,6 +253,21 @@
   .badge-manual {
     background: color-mix(in srgb, #f59e0b 12%, transparent);
     color: #f59e0b;
+  }
+
+  .tick-cmd {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 1px 5px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    background: color-mix(in srgb, var(--text-secondary) 12%, transparent);
+    color: var(--text-secondary);
+  }
+  .tick-cmd.cmd-fast {
+    background: color-mix(in srgb, #3b82f6 14%, transparent);
+    color: #3b82f6;
   }
 
   .tick-args {
