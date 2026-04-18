@@ -25,7 +25,8 @@
     "extension:invoke",
     "cache:read",
     "cache:write",
-    "application:read"
+    "application:read",
+    "power:inhibit"
   ],
   "preferences": [
     {

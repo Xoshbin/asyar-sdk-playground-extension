@@ -13,6 +13,7 @@ import type {
   ICacheService,
   IApplicationService,
   ICommandService,
+  IPowerService,
 } from 'asyar-sdk';
 
 /**
@@ -36,6 +37,7 @@ export const svc = {
   cache:        null as unknown as ICacheService,
   application:  null as unknown as IApplicationService,
   command:      null as unknown as ICommandService,
+  power:        null as unknown as IPowerService,
 };
 
 // ── Background scheduling tick log ──────────────────────────────────────────

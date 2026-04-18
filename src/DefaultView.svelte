@@ -16,6 +16,7 @@
   import PreferencesSection from './sections/PreferencesSection.svelte';
   import ApplicationSection from './sections/ApplicationSection.svelte';
   import CommandMetadataSection from './sections/CommandMetadataSection.svelte';
+  import PowerSection from './sections/PowerSection.svelte';
 
   interface Props {
     context: ExtensionContext;
@@ -41,6 +42,7 @@
     { id: 'cache',       label: 'Cache',       icon: '⚡' },
     { id: 'application', label: 'Application', icon: '🎯' },
     { id: 'cmdmeta', label: 'Cmd Metadata', icon: '🏷️' },
+    { id: 'power',       label: 'Power',       icon: '☕' },
   ];
 </script>
 
@@ -93,6 +95,8 @@
       <ApplicationSection />
     {:else if activeTab === 'cmdmeta'}
       <CommandMetadataSection />
+    {:else if activeTab === 'power'}
+      <PowerSection />
     {/if}
   </div>
 </div>
