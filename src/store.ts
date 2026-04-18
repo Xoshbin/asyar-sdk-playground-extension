@@ -98,6 +98,51 @@ export const statusBar = {
   },
 };
 
+// ── Notification action click log ───────────────────────────────────────────
+
+export interface NotificationActionLogEntry {
+  timestamp: Date;
+  commandId: string;
+  args: Record<string, unknown>;
+  note: string;
+}
+
+const notifActionListeners = new Set<() => void>();
+
+function fireNotif() {
+  notifActionListeners.forEach((fn) => fn());
+}
+
+/**
+ * Module-scoped state so the Notification section's action log survives
+ * tab switches — the Tier 2 iframe keeps the extension alive so the log
+ * grows across remounts.
+ */
+export const notifActions = {
+  log: [] as NotificationActionLogEntry[],
+  lastSentId: '' as string,
+
+  record(entry: NotificationActionLogEntry) {
+    notifActions.log = [...notifActions.log, entry].slice(-25);
+    fireNotif();
+  },
+
+  setLastSentId(id: string) {
+    notifActions.lastSentId = id;
+    fireNotif();
+  },
+
+  clear() {
+    notifActions.log = [];
+    fireNotif();
+  },
+
+  subscribe(fn: () => void): () => void {
+    notifActionListeners.add(fn);
+    return () => notifActionListeners.delete(fn);
+  },
+};
+
 // ── Background scheduling tick log ──────────────────────────────────────────
 
 export interface TickEvent {

@@ -21,7 +21,7 @@ import type {
   ISystemEventsService,
   IStatusBarService,
 } from 'asyar-sdk';
-import { svc, scheduling } from './store';
+import { svc, scheduling, notifActions } from './store';
 import DefaultView from './DefaultView.svelte';
 
 function formatTime(d: Date): string {
@@ -61,7 +61,7 @@ class SDKPlaygroundExtension implements Extension {
     // path (asyar:action:execute → ExtensionBridge → handler) works.
     const actionService = context.getService<IActionService>('actions');
     actionService.registerActionHandler('send-notification', async () => {
-      await svc.notification.notify({
+      await svc.notification.send({
         title: 'SDK Playground',
         body: 'Manifest-declared action fired from the ⌘K drawer',
       });
@@ -100,6 +100,18 @@ class SDKPlaygroundExtension implements Extension {
         ? `Ticked ${ticksForCommand.length} times · Last: ${formatTime(last.timestamp)}`
         : undefined;
       svc.command?.updateCommandMetadata(commandId, { subtitle }).catch(console.error);
+    }
+    if (commandId === 'notif-extend' || commandId === 'notif-stop') {
+      const note = commandId === 'notif-extend'
+        ? `☕ extend by ${args?.minutes ?? '?'}m`
+        : '🛑 stop requested';
+      notifActions.record({
+        timestamp: new Date(),
+        commandId,
+        args: args ?? {},
+        note,
+      });
+      svc.feedback?.showHUD(`Notification action: ${note}`).catch(console.error);
     }
   }
 

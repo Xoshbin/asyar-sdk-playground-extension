@@ -145,6 +145,18 @@
       "schedule": {
         "intervalSeconds": 10
       }
+    },
+    {
+      "id": "notif-extend",
+      "name": "Coffee — extend",
+      "description": "Fired by the Extend button on the notification demo. Records the event in the Notifications section log.",
+      "resultType": "no-view"
+    },
+    {
+      "id": "notif-stop",
+      "name": "Coffee — stop",
+      "description": "Fired by the Stop button on the notification demo. Records the event in the Notifications section log.",
+      "resultType": "no-view"
     }
   ]
 }
