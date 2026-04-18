@@ -18,6 +18,7 @@
   import CommandMetadataSection from './sections/CommandMetadataSection.svelte';
   import PowerSection from './sections/PowerSection.svelte';
   import SystemEventsSection from './sections/SystemEventsSection.svelte';
+  import StatusBarSection from './sections/StatusBarSection.svelte';
 
   interface Props {
     context: ExtensionContext;
@@ -45,6 +46,7 @@
     { id: 'cmdmeta', label: 'Cmd Metadata', icon: '🏷️' },
     { id: 'power',       label: 'Power',       icon: '☕' },
     { id: 'sysevents',   label: 'System Events', icon: '📡' },
+    { id: 'statusbar',   label: 'Status Bar',  icon: '🧭' },
   ];
 </script>
 
@@ -101,6 +103,8 @@
       <PowerSection />
     {:else if activeTab === 'sysevents'}
       <SystemEventsSection />
+    {:else if activeTab === 'statusbar'}
+      <StatusBarSection />
     {/if}
   </div>
 </div>

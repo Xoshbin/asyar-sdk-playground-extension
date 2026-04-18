@@ -15,6 +15,7 @@ import type {
   ICommandService,
   IPowerService,
   ISystemEventsService,
+  IStatusBarService,
 } from 'asyar-sdk';
 
 /**
@@ -40,6 +41,61 @@ export const svc = {
   command:      null as unknown as ICommandService,
   power:        null as unknown as IPowerService,
   systemEvents: null as unknown as ISystemEventsService,
+  statusBar:    null as unknown as IStatusBarService,
+};
+
+// ── Status-bar (tray) click log ─────────────────────────────────────────────
+
+export interface StatusBarClickLogEntry {
+  timestamp: Date;
+  itemPath: string[];
+  checked?: boolean;
+  /** Human-readable label for the section's log list. */
+  note: string;
+}
+
+const statusBarListeners = new Set<() => void>();
+
+function fire() {
+  statusBarListeners.forEach((fn) => fn());
+}
+
+/**
+ * Module-scoped state so the Status Bar section's UI survives tab
+ * switches (Svelte unmounts/remounts the section when the user navigates
+ * to other tabs, which would otherwise reset `coffeeRegistered` etc.).
+ */
+export const statusBar = {
+  log: [] as StatusBarClickLogEntry[],
+  coffeeRegistered: false,
+  musicRegistered: false,
+  lastError: '' as string,
+
+  record(entry: StatusBarClickLogEntry) {
+    statusBar.log = [...statusBar.log, entry].slice(-25);
+    fire();
+  },
+
+  setRegistered(id: 'coffee' | 'music', value: boolean) {
+    if (id === 'coffee') statusBar.coffeeRegistered = value;
+    else statusBar.musicRegistered = value;
+    fire();
+  },
+
+  setError(msg: string) {
+    statusBar.lastError = msg;
+    fire();
+  },
+
+  clear() {
+    statusBar.log = [];
+    fire();
+  },
+
+  subscribe(fn: () => void): () => void {
+    statusBarListeners.add(fn);
+    return () => statusBarListeners.delete(fn);
+  },
 };
 
 // ── Background scheduling tick log ──────────────────────────────────────────

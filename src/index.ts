@@ -19,6 +19,7 @@ import type {
   IActionService,
   IPowerService,
   ISystemEventsService,
+  IStatusBarService,
 } from 'asyar-sdk';
 import { svc, scheduling } from './store';
 import DefaultView from './DefaultView.svelte';
@@ -53,6 +54,7 @@ class SDKPlaygroundExtension implements Extension {
     svc.command      = context.getService<ICommandService>('commands');
     svc.power        = context.getService<IPowerService>('power');
     svc.systemEvents = context.getService<ISystemEventsService>('systemEvents');
+    svc.statusBar    = context.getService<IStatusBarService>('statusBar');
 
     // Register manifest-declared action handlers. The host registered these
     // actions from manifest.json; we wire the execute logic here so the relay
