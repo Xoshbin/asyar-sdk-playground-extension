@@ -14,6 +14,7 @@ import type {
   IApplicationService,
   ICommandService,
   IPowerService,
+  ISystemEventsService,
 } from 'asyar-sdk';
 
 /**
@@ -38,6 +39,7 @@ export const svc = {
   application:  null as unknown as IApplicationService,
   command:      null as unknown as ICommandService,
   power:        null as unknown as IPowerService,
+  systemEvents: null as unknown as ISystemEventsService,
 };
 
 // ── Background scheduling tick log ──────────────────────────────────────────

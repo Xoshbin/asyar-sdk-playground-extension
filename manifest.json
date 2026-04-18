@@ -26,7 +26,8 @@
     "cache:read",
     "cache:write",
     "application:read",
-    "power:inhibit"
+    "power:inhibit",
+    "systemEvents:read"
   ],
   "preferences": [
     {
