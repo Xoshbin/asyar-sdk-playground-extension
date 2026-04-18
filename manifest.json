@@ -26,6 +26,7 @@
     "cache:read",
     "cache:write",
     "application:read",
+    "app:frontmost-watch",
     "power:inhibit",
     "systemEvents:read"
   ],
