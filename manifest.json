@@ -9,7 +9,7 @@
   "icon": "🧪",
   "type": "view",
   "defaultView": "DefaultView",
-  "asyarSdk": "^1.15.11",
+  "asyarSdk": "^1.15.12",
   "permissions": [
     "selection:read",
     "clipboard:read",
