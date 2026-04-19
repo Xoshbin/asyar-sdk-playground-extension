@@ -128,6 +128,37 @@ class SDKPlaygroundExtension implements Extension {
       });
       svc.feedback?.showHUD(`Timer: ${label}`).catch(console.error);
     }
+    if (commandId === 'greet') {
+      // Arguments declared in manifest.json arrive nested under `arguments`,
+      // keeping them separate from system flags like `scheduledTick`.
+      const nested = (args as { arguments?: Record<string, string | number> })?.arguments ?? {};
+      const name = String(nested.name ?? 'stranger');
+      const style = String(nested.style ?? 'casual');
+      const volume = Math.max(0, Math.floor(Number(nested.volume ?? 1)));
+      const punctuation = '!'.repeat(volume);
+      let greeting: string;
+      switch (style) {
+        case 'formal':
+          greeting = `Good day, ${name}${punctuation}`;
+          break;
+        case 'rhyming':
+          greeting = `Hey ${name}, you shine like a flame${punctuation}`;
+          break;
+        default:
+          greeting = `Hey ${name}${punctuation}`;
+      }
+      console.log('[SDKPlayground] greet fired', { name, style, volume, greeting, args });
+      try {
+        await svc.feedback?.showHUD(greeting);
+      } catch (err) {
+        console.error('[SDKPlayground] showHUD failed', err);
+      }
+      try {
+        await svc.feedback?.showToast({ title: 'Greet', message: greeting, style: 'success' });
+      } catch (err) {
+        console.error('[SDKPlayground] showToast failed', err);
+      }
+    }
   }
 
   onUnload = () => {};

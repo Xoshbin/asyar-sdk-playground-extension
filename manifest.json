@@ -1,15 +1,15 @@
 {
   "id": "org.asyar.sdk-playground",
   "name": "SDK Playground",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Developer playground demonstrating every Asyar SDK service in a Tier 2 extension",
   "author": "Developer",
   "main": "dist/index.js",
-  "searchable": true,
+  "searchable": false,
   "icon": "🧪",
   "type": "view",
   "defaultView": "DefaultView",
-  "asyarSdk": "^1.14.0",
+  "asyarSdk": "^1.15.10",
   "permissions": [
     "selection:read",
     "clipboard:read",
@@ -172,6 +172,47 @@
       "name": "Timer — snooze",
       "description": "Fired by the snooze demo timer. Records the fire and the original schedule args in the Timers log.",
       "resultType": "no-view"
+    },
+    {
+      "id": "greet",
+      "name": "Greet Someone",
+      "description": "Demonstrates command arguments — Tab on this command to fill name, style, and volume inline before greeting.",
+      "resultType": "no-view",
+      "icon": "👋",
+      "arguments": [
+        {
+          "name": "name",
+          "type": "text",
+          "placeholder": "Who to greet",
+          "required": true
+        },
+        {
+          "name": "style",
+          "type": "dropdown",
+          "placeholder": "Style",
+          "default": "casual",
+          "data": [
+            {
+              "value": "casual",
+              "title": "Casual"
+            },
+            {
+              "value": "formal",
+              "title": "Formal"
+            },
+            {
+              "value": "rhyming",
+              "title": "Rhyming"
+            }
+          ]
+        },
+        {
+          "name": "volume",
+          "type": "number",
+          "placeholder": "Exclamation count",
+          "default": 1
+        }
+      ]
     }
   ]
 }
