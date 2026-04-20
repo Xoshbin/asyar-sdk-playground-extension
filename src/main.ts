@@ -32,7 +32,7 @@
 // ───────────────────────────────────────────────────────────────────────────
 
 import { mount } from 'svelte';
-import { ExtensionContext, ExtensionBridge } from 'asyar-sdk';
+import { ExtensionContext, extensionBridge } from 'asyar-sdk';
 import extension, { DefaultView } from './index';
 import manifest from '../manifest.json';
 
@@ -47,9 +47,8 @@ const extensionId = window.location.hostname || 'org.asyar.sdk-playground';
   //   - asyar:command:execute → extension.executeCommand(commandId, args)
   // Without this, the bridge has no implementation to forward messages to and
   // scheduled tick commands (no-view) are silently dropped.
-  const bridge = ExtensionBridge.getInstance();
-  bridge.registerManifest(manifest as any);
-  bridge.registerExtensionImplementation(extensionId, extension);
+  extensionBridge.registerManifest(manifest as any);
+  extensionBridge.registerExtensionImplementation(extensionId, extension);
 
   // Resolve services and populate svc.* before mounting the view so
   // components can use svc.feedback, svc.storage, etc. synchronously.
