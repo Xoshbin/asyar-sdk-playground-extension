@@ -4,11 +4,9 @@
   "version": "1.5.0",
   "description": "Developer playground demonstrating every Asyar SDK service in a Tier 2 extension",
   "author": "Developer",
-  "main": "dist/index.js",
   "searchable": false,
   "icon": "🧪",
-  "type": "view",
-  "defaultView": "DefaultView",
+  "type": "extension",
   "asyarSdk": "^1.15.12",
   "permissions": [
     "selection:read",
@@ -110,7 +108,6 @@
       "id": "open",
       "name": "Open SDK Playground",
       "description": "Exercise every SDK service in a sandboxed Tier 2 extension",
-      "resultType": "view",
       "icon": "🧪",
       "actions": [
         {
@@ -120,13 +117,14 @@
           "icon": "🗑️",
           "category": "SDK Playground"
         }
-      ]
+      ],
+      "mode": "view",
+      "component": "DefaultView"
     },
     {
       "id": "tick-test",
       "name": "Scheduling Tick Test",
       "description": "Background command fired by the platform scheduler every 60 seconds",
-      "resultType": "no-view",
       "schedule": {
         "intervalSeconds": 60
       },
@@ -138,46 +136,46 @@
           "icon": "▶️",
           "category": "SDK Playground"
         }
-      ]
+      ],
+      "mode": "background"
     },
     {
       "id": "tick-test-fast",
       "name": "Scheduling Tick Test (10s floor)",
       "description": "End-to-end probe at the 10-second minimum interval — verifies sub-minute pollers traverse the full Rust→host→iframe pipeline",
-      "resultType": "no-view",
       "schedule": {
         "intervalSeconds": 10
-      }
+      },
+      "mode": "background"
     },
     {
       "id": "notif-extend",
       "name": "Coffee — extend",
       "description": "Fired by the Extend button on the notification demo. Records the event in the Notifications section log.",
-      "resultType": "no-view"
+      "mode": "background"
     },
     {
       "id": "notif-stop",
       "name": "Coffee — stop",
       "description": "Fired by the Stop button on the notification demo. Records the event in the Notifications section log.",
-      "resultType": "no-view"
+      "mode": "background"
     },
     {
       "id": "timer-ring",
       "name": "Timer — ring",
       "description": "Fired by a one-shot timer scheduled from the Timers section. Records the fire in the Timers log.",
-      "resultType": "no-view"
+      "mode": "background"
     },
     {
       "id": "timer-snooze",
       "name": "Timer — snooze",
       "description": "Fired by the snooze demo timer. Records the fire and the original schedule args in the Timers log.",
-      "resultType": "no-view"
+      "mode": "background"
     },
     {
       "id": "greet",
       "name": "Greet Someone",
       "description": "Demonstrates command arguments — Tab on this command to fill name, style, and volume inline before greeting.",
-      "resultType": "no-view",
       "icon": "👋",
       "arguments": [
         {
@@ -212,7 +210,11 @@
           "placeholder": "Exclamation count",
           "default": 1
         }
-      ]
+      ],
+      "mode": "background"
     }
-  ]
+  ],
+  "background": {
+    "main": "dist/worker.js"
+  }
 }
