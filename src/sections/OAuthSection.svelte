@@ -1,5 +1,12 @@
 <script lang="ts">
-  import { svc } from '../store';
+  import type { ExtensionContext, IOAuthService } from 'asyar-sdk/view';
+
+  interface Props {
+    context: ExtensionContext;
+  }
+  let { context }: Props = $props();
+
+  const oauth = $derived(context.getService<IOAuthService>('oauth'));
 
   let providerId        = $state('github');
   let clientId          = $state('');
@@ -21,7 +28,7 @@
 
     try {
       const scopes = scopesInput.split(',').map(s => s.trim()).filter(Boolean);
-      const token = await svc.oauth.authorize({
+      const token = await oauth.authorize({
         providerId:       providerId.trim(),
         clientId:         clientId.trim(),
         authorizationUrl: authorizationUrl.trim(),
@@ -48,7 +55,7 @@
     statusMsg = '';
 
     try {
-      await svc.oauth.revokeToken(providerId.trim());
+      await oauth.revokeToken(providerId.trim());
       output = `Token for provider "${providerId}" revoked.`;
       outputOk = true;
     } catch (err: any) {

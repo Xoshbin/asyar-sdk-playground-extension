@@ -1,5 +1,12 @@
 <script lang="ts">
-  import { svc } from '../store';
+  import type { ExtensionContext, IStorageService } from 'asyar-sdk/view';
+
+  interface Props {
+    context: ExtensionContext;
+  }
+  let { context }: Props = $props();
+
+  const storage = $derived(context.getService<IStorageService>('storage'));
 
   let loading = $state(false);
   let output = $state('');
@@ -12,7 +19,7 @@
   async function save() {
     loading = true;
     try {
-      await svc.storage.set(key, value);
+      await storage.set(key, value);
       setOutput(`Saved: "${key}" = "${value}"`);
     } catch (e: any) { setOutput(`Error: ${e.message ?? e}`, false); }
     finally { loading = false; }
@@ -21,7 +28,7 @@
   async function load() {
     loading = true;
     try {
-      const result = await svc.storage.get(key);
+      const result = await storage.get(key);
       setOutput(result !== null && result !== undefined ? `"${key}" = "${result}"` : `"${key}" not found`);
     } catch (e: any) { setOutput(`Error: ${e.message ?? e}`, false); }
     finally { loading = false; }

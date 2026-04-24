@@ -1,6 +1,20 @@
 <script lang="ts">
-  import { onDestroy, onMount } from 'svelte';
-  import { svc, notifActions, type NotificationActionLogEntry } from '../store';
+  import { onMount } from 'svelte';
+  import type {
+    ExtensionContext,
+    ExtensionStateProxy,
+    INotificationService,
+  } from 'asyar-sdk/view';
+  import { STATE_KEYS, type NotifActionLogEntry } from '../stateKeys';
+  import { formatTime } from '../lib/timeFormat';
+
+  interface Props {
+    context: ExtensionContext;
+  }
+  let { context }: Props = $props();
+
+  const notification = $derived(context.getService<INotificationService>('notifications'));
+  const stateProxy = $derived(context.getService<ExtensionStateProxy>('state'));
 
   let loading = $state(false);
   let output = $state('');
@@ -8,31 +22,48 @@
   let title = $state('Coffee ending in 1 minute');
   let body = $state('Extend or stop before the timer runs out.');
 
-  let log = $state<NotificationActionLogEntry[]>([...notifActions.log]);
-  let lastSentId = $state(notifActions.lastSentId);
+  let log = $state<NotifActionLogEntry[]>([]);
+  // lastSentId stays view-local — it is only useful while the view is mounted
+  // to drive the "Dismiss last" button; no value to persisting it.
+  let lastSentId = $state('');
 
   onMount(() => {
-    const unsubscribe = notifActions.subscribe(() => {
-      log = [...notifActions.log];
-      lastSentId = notifActions.lastSentId;
-    });
-    onDestroy(unsubscribe);
-  });
+    let active = true;
+    const cleanup: Array<() => void | Promise<void>> = [];
 
-  function formatClock(d: Date): string {
-    return d.toLocaleTimeString(undefined, {
-      hour12: false,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
-  }
+    (async () => {
+      const [initial, unsub] = await Promise.all([
+        stateProxy.get(STATE_KEYS.logsNotifActions),
+        stateProxy.subscribe(STATE_KEYS.logsNotifActions, (v) => {
+          if (!active) return;
+          log = Array.isArray(v) ? (v as NotifActionLogEntry[]) : [];
+        }),
+      ]);
+      if (!active) {
+        void unsub();
+        return;
+      }
+      log = Array.isArray(initial) ? (initial as NotifActionLogEntry[]) : [];
+      cleanup.push(unsub);
+    })();
+
+    return () => {
+      active = false;
+      for (const fn of cleanup) {
+        try {
+          void fn();
+        } catch {
+          // Best-effort teardown
+        }
+      }
+    };
+  });
 
   async function sendPlain() {
     loading = true;
     try {
-      const id = await svc.notification.send({ title, body });
-      notifActions.setLastSentId(id);
+      const id = await notification.send({ title, body });
+      lastSentId = id;
       output = `Sent (${id}) — no action buttons.`;
       outputOk = true;
     } catch (e: any) {
@@ -46,7 +77,7 @@
   async function sendWithActions() {
     loading = true;
     try {
-      const id = await svc.notification.send({
+      const id = await notification.send({
         title,
         body,
         actions: [
@@ -54,7 +85,7 @@
           { id: 'stop',   title: 'Stop now',   commandId: 'notif-stop' },
         ],
       });
-      notifActions.setLastSentId(id);
+      lastSentId = id;
       output = `Sent (${id}) — click Extend or Stop on the OS notification.`;
       outputOk = true;
     } catch (e: any) {
@@ -68,7 +99,7 @@
   async function dismissLast() {
     if (!lastSentId) return;
     try {
-      await svc.notification.dismiss(lastSentId);
+      await notification.dismiss(lastSentId);
       output = `Dismissed ${lastSentId}`;
       outputOk = true;
     } catch (e: any) {
@@ -77,8 +108,8 @@
     }
   }
 
-  function clearLog() {
-    notifActions.clear();
+  async function clearLog() {
+    await context.request('clearLog', { logKey: STATE_KEYS.logsNotifActions });
   }
 </script>
 
@@ -86,7 +117,11 @@
   <header class="section-header">
     <div>
       <span class="section-title">Notification Service</span>
-      <span class="section-desc">Send OS notifications — with or without action buttons that fire extension commands</span>
+      <span class="section-desc">
+        Send OS notifications — with or without action buttons that fire extension
+        commandIds. Action commandIds are dispatched into the <b>worker</b>
+        iframe so they survive view Dormant.
+      </span>
     </div>
   </header>
 
@@ -149,7 +184,7 @@
       <ul class="log-list">
         {#each [...log].reverse() as entry}
           <li class="log-item">
-            <span class="log-time">{formatClock(entry.timestamp)}</span>
+            <span class="log-time">{formatTime(entry.at)}</span>
             <span class="log-note">{entry.note}</span>
             <span class="log-cmd">{entry.commandId}{entry.args && Object.keys(entry.args).length ? ' ' + JSON.stringify(entry.args) : ''}</span>
           </li>

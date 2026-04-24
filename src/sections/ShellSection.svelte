@@ -1,6 +1,19 @@
 <script lang="ts">
-  import { svc } from '../store';
-  import type { ShellHandle, ShellDescriptor } from 'asyar-sdk';
+  import type {
+    ExtensionContext,
+    IShellService,
+    IStorageService,
+    ShellDescriptor,
+    ShellHandle,
+  } from 'asyar-sdk/view';
+
+  interface Props {
+    context: ExtensionContext;
+  }
+  let { context }: Props = $props();
+
+  const shell = $derived(context.getService<IShellService>('shell'));
+  const storage = $derived(context.getService<IStorageService>('storage'));
 
   interface OutputLine {
     kind: 'stdout' | 'stderr' | 'exit' | 'error' | 'aborted' | 'info';
@@ -64,13 +77,12 @@
   function spawn(prog = program, argv = args) {
     if (running) return;
     lines = [];
-    const h = svc.shell.spawn({
+    const h = shell.spawn({
       program: prog,
       args: argv.trim() ? argv.trim().split(/\s+/) : [],
     });
     wireHandle(h, `[spawned — spawnId=${h.spawnId}]`);
-    // Remember the id so we can demonstrate reattach after detach.
-    svc.storage.set(STORAGE_KEY, h.spawnId).catch(() => {});
+    storage.set(STORAGE_KEY, h.spawnId).catch(() => {});
   }
 
   function abort() {
@@ -83,12 +95,6 @@
     spawn(preset.program, preset.args);
   }
 
-  /**
-   * Drop the local handle WITHOUT aborting the process. Simulates an
-   * iframe reload that loses its SDK-side listener but leaves the child
-   * process alive in the launcher-side registry. After this the terminal
-   * stops receiving chunks — attach() is the recovery path.
-   */
   function detach() {
     if (!handle) return;
     handle = null;
@@ -106,7 +112,7 @@
   async function refreshList() {
     lastListError = null;
     try {
-      liveSpawns = await svc.shell.list();
+      liveSpawns = await shell.list();
     } catch (err) {
       lastListError = err instanceof Error ? err.message : String(err);
       liveSpawns = [];
@@ -116,12 +122,12 @@
   function attachTo(spawnId: string) {
     if (running) return;
     lines = [];
-    const h = svc.shell.attach(spawnId);
+    const h = shell.attach(spawnId);
     wireHandle(h, `[attached to ${spawnId} — resuming stream]`);
   }
 
   async function attachToSaved() {
-    const saved = await svc.storage.get<string>(STORAGE_KEY);
+    const saved = await storage.get<string>(STORAGE_KEY);
     if (!saved) {
       lines = [...lines, { kind: 'info', text: '[no saved spawnId yet — run a spawn first]' }];
       return;
@@ -138,7 +144,6 @@
     </div>
   </header>
 
-  <!-- Freeform inputs -->
   <div class="row">
     <div class="field field-program">
       <span class="field-label">Program</span>
@@ -160,7 +165,6 @@
     </div>
   </div>
 
-  <!-- Spawn / Detach / Abort -->
   <div class="btn-group">
     {#if running}
       <button class="action-btn" onclick={detach}>
@@ -197,7 +201,6 @@
     {/if}
   </div>
 
-  <!-- Presets -->
   <div class="presets-label">QUICK PRESETS</div>
   <div class="btn-group presets">
     {#each presets as preset}
@@ -211,7 +214,6 @@
     {/each}
   </div>
 
-  <!-- List + Attach demo -->
   <div class="presets-label">RE-ATTACH DEMO</div>
   <div class="btn-group presets">
     <button class="action-btn" onclick={refreshList}>
@@ -261,7 +263,6 @@
     <div class="list-empty">No live spawns (press List to refresh).</div>
   {/if}
 
-  <!-- Streaming terminal output -->
   <div class="output-area">
     <span class="output-label">
       OUTPUT{running ? ' — streaming…' : detached ? ' — detached' : ''}

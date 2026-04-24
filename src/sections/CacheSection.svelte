@@ -1,5 +1,12 @@
 <script lang="ts">
-  import { svc } from '../store';
+  import type { ExtensionContext, ICacheService } from 'asyar-sdk/view';
+
+  interface Props {
+    context: ExtensionContext;
+  }
+  let { context }: Props = $props();
+
+  const cache = $derived(context.getService<ICacheService>('cache'));
 
   let loading = $state(false);
   let output = $state('');
@@ -14,7 +21,7 @@
     loading = true;
     try {
       const expirationDate = new Date(Date.now() + ttlMinutes * 60 * 1000);
-      await svc.cache.set(key, value, { expirationDate });
+      await cache.set(key, value, { expirationDate });
       setOutput(`Cached: "${key}" = "${value}"\nExpires at: ${expirationDate.toLocaleTimeString()}`);
     } catch (e: any) { setOutput(`Error: ${e.message ?? e}`, false); }
     finally { loading = false; }
@@ -23,7 +30,7 @@
   async function load() {
     loading = true;
     try {
-      const result = await svc.cache.get(key);
+      const result = await cache.get(key);
       if (result === undefined) {
         setOutput(`"${key}" not found or expired`, false);
       } else {
@@ -36,7 +43,7 @@
   async function remove() {
     loading = true;
     try {
-      const existed = await svc.cache.remove(key);
+      const existed = await cache.remove(key);
       setOutput(existed ? `Removed "${key}"` : `"${key}" did not exist`);
     } catch (e: any) { setOutput(`Error: ${e.message ?? e}`, false); }
     finally { loading = false; }

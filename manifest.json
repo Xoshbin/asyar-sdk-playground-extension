@@ -2,11 +2,11 @@
   "id": "org.asyar.sdk-playground",
   "name": "SDK Playground",
   "version": "1.5.0",
+  "type": "extension",
   "description": "Developer playground demonstrating every Asyar SDK service in a Tier 2 extension",
   "author": "Developer",
   "searchable": false,
   "icon": "🧪",
-  "type": "extension",
   "asyarSdk": "^1.15.12",
   "permissions": [
     "selection:read",

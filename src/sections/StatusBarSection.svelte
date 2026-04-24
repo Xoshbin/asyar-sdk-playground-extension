@@ -1,212 +1,138 @@
 <script lang="ts">
-  import { onDestroy, onMount } from 'svelte';
-  import { svc, statusBar, type StatusBarClickLogEntry } from '../store';
+  import { onMount } from 'svelte';
+  import type { ExtensionContext, ExtensionStateProxy } from 'asyar-sdk/view';
+  import {
+    STATE_KEYS,
+    type StatusBarClickLogEntry,
+    type StatusBarRegisteredState,
+    type StatusBarTrayState,
+  } from '../stateKeys';
+  import { formatTime } from '../lib/timeFormat';
 
-  let log = $state<StatusBarClickLogEntry[]>([...statusBar.log]);
-  let coffeeRegistered = $state(statusBar.coffeeRegistered);
-  let musicRegistered = $state(statusBar.musicRegistered);
-  let lastError = $state(statusBar.lastError);
+  interface Props {
+    context: ExtensionContext;
+  }
+  let { context }: Props = $props();
+
+  const stateProxy = $derived(context.getService<ExtensionStateProxy>('state'));
+
+  let log = $state<StatusBarClickLogEntry[]>([]);
+  let registered = $state<StatusBarRegisteredState>({ coffee: false, music: false });
+  let tray = $state<StatusBarTrayState>({ playing: false, muted: false, volumeLevel: 'medium' });
+  let lastError = $state<string>('');
 
   let message = $state('');
   let messageOk = $state(true);
 
   let coffeeIcon = $state('☕');
   let coffeeTooltip = $state('Coffee — SDK Playground');
-  let playing = $state(false);
-  let muted = $state(false);
-  let volumeLevel = $state<'low' | 'medium' | 'high'>('medium');
-
-  const COFFEE_ID = 'coffee-pot';
-  const MUSIC_ID = 'sdk-music';
 
   function note(msg: string, ok = true) {
     message = msg;
     messageOk = ok;
   }
 
-  function formatClock(d: Date): string {
-    return d.toLocaleTimeString(undefined, {
-      hour12: false,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
-  }
+  onMount(() => {
+    let active = true;
+    const cleanup: Array<() => void | Promise<void>> = [];
 
-  function recordClick(itemPath: string[], checked: boolean | undefined, label: string) {
-    statusBar.record({
-      timestamp: new Date(),
-      itemPath,
-      checked,
-      note: label,
-    });
-  }
+    (async () => {
+      const [logV, regV, trayV, errV, uLog, uReg, uTray, uErr] = await Promise.all([
+        stateProxy.get(STATE_KEYS.logsStatusBarClicks),
+        stateProxy.get(STATE_KEYS.statusBarRegistered),
+        stateProxy.get(STATE_KEYS.statusBarTray),
+        stateProxy.get(STATE_KEYS.statusBarLastError),
+        stateProxy.subscribe(STATE_KEYS.logsStatusBarClicks, (v) => {
+          if (!active) return;
+          log = Array.isArray(v) ? (v as StatusBarClickLogEntry[]) : [];
+        }),
+        stateProxy.subscribe(STATE_KEYS.statusBarRegistered, (v) => {
+          if (!active) return;
+          registered = (v as StatusBarRegisteredState | null) ?? { coffee: false, music: false };
+        }),
+        stateProxy.subscribe(STATE_KEYS.statusBarTray, (v) => {
+          if (!active) return;
+          tray = (v as StatusBarTrayState | null) ?? { playing: false, muted: false, volumeLevel: 'medium' };
+        }),
+        stateProxy.subscribe(STATE_KEYS.statusBarLastError, (v) => {
+          if (!active) return;
+          lastError = typeof v === 'string' ? v : '';
+        }),
+      ]);
 
-  function buildCoffeeTree() {
-    return {
-      id: COFFEE_ID,
-      icon: coffeeIcon,
-      text: coffeeTooltip,
-      onClick: ({ itemPath }: { itemPath: string[] }) => {
-        recordClick(itemPath, undefined, 'top-level click (tray icon)');
-      },
-      submenu: [
-        {
-          id: 'playback',
-          text: 'Playback',
-          submenu: [
-            {
-              id: 'play',
-              text: 'Playing',
-              checked: playing,
-              onClick: ({ itemPath, checked }: { itemPath: string[]; checked?: boolean }) => {
-                playing = checked ?? !playing;
-                recordClick(itemPath, checked, `play → ${playing}`);
-                void registerCoffee();
-              },
-            },
-            {
-              id: 'mute',
-              text: 'Muted',
-              checked: muted,
-              onClick: ({ itemPath, checked }: { itemPath: string[]; checked?: boolean }) => {
-                muted = checked ?? !muted;
-                recordClick(itemPath, checked, `mute → ${muted}`);
-                void registerCoffee();
-              },
-            },
-          ],
-        },
-        { separator: true as const },
-        {
-          id: 'volume',
-          text: `Volume: ${volumeLevel}`,
-          submenu: [
-            {
-              id: 'low',
-              text: 'Low (33%)',
-              onClick: ({ itemPath }: { itemPath: string[] }) => {
-                volumeLevel = 'low';
-                recordClick(itemPath, undefined, 'volume → low');
-                void registerCoffee();
-              },
-            },
-            {
-              id: 'medium',
-              text: 'Medium (66%)',
-              onClick: ({ itemPath }: { itemPath: string[] }) => {
-                volumeLevel = 'medium';
-                recordClick(itemPath, undefined, 'volume → medium');
-                void registerCoffee();
-              },
-            },
-            {
-              id: 'high',
-              text: 'High (100%)',
-              onClick: ({ itemPath }: { itemPath: string[] }) => {
-                volumeLevel = 'high';
-                recordClick(itemPath, undefined, 'volume → high');
-                void registerCoffee();
-              },
-            },
-          ],
-        },
-        { separator: true as const },
-        {
-          id: 'disabled-demo',
-          text: 'Disabled item (for demo)',
-          enabled: false,
-        },
-        {
-          id: 'quit-coffee',
-          text: 'Unregister Coffee',
-          onClick: ({ itemPath }: { itemPath: string[] }) => {
-            recordClick(itemPath, undefined, 'quit-coffee → unregister');
-            void unregisterCoffee();
-          },
-        },
-      ],
+      if (!active) {
+        void uLog();
+        void uReg();
+        void uTray();
+        void uErr();
+        return;
+      }
+
+      log = Array.isArray(logV) ? (logV as StatusBarClickLogEntry[]) : [];
+      registered = (regV as StatusBarRegisteredState | null) ?? { coffee: false, music: false };
+      tray = (trayV as StatusBarTrayState | null) ?? { playing: false, muted: false, volumeLevel: 'medium' };
+      lastError = typeof errV === 'string' ? errV : '';
+
+      cleanup.push(uLog, uReg, uTray, uErr);
+    })();
+
+    return () => {
+      active = false;
+      for (const fn of cleanup) {
+        try {
+          void fn();
+        } catch {
+          // Best-effort teardown
+        }
+      }
     };
-  }
+  });
 
   async function registerCoffee() {
-    try {
-      // registerItem is now async and will surface Rust-side errors
-      // (validation / serde deserialize / build failures) back here.
-      await (svc.statusBar.registerItem(buildCoffeeTree()) as unknown as Promise<void>);
-      statusBar.setRegistered('coffee', true);
-      statusBar.setError('');
-      note(`✓ registered '${COFFEE_ID}' — look for ${coffeeIcon} in the menu bar`);
-    } catch (e: any) {
-      const msg = e?.message ?? String(e);
-      statusBar.setRegistered('coffee', false);
-      statusBar.setError(msg);
-      note(`registerItem failed: ${msg}`, false);
+    const res = await context.request<{ ok: boolean; error?: string }>(
+      'statusBar.registerCoffee',
+      { icon: coffeeIcon, tooltip: coffeeTooltip },
+    );
+    if (res.ok) {
+      note(`✓ registered 'coffee-pot' — look for ${coffeeIcon} in the menu bar`);
+    } else {
+      note(`registerItem failed: ${res.error ?? 'unknown'}`, false);
     }
   }
 
   async function unregisterCoffee() {
-    try {
-      await (svc.statusBar.unregisterItem(COFFEE_ID) as unknown as Promise<void>);
-      statusBar.setRegistered('coffee', false);
-      note(`✓ unregisterItem('${COFFEE_ID}') dispatched`);
-    } catch (e: any) {
-      note(`unregisterItem failed: ${e?.message ?? e}`, false);
-    }
+    await context.request('statusBar.unregisterCoffee', {});
+    note(`✓ unregisterItem('coffee-pot') dispatched`);
   }
 
   async function registerMusic() {
-    try {
-      await (svc.statusBar.registerItem({
-        id: MUSIC_ID,
-        icon: '♪',
-        text: '♪ In Rainbows — Radiohead',
-        onClick: ({ itemPath }) => {
-          recordClick(itemPath, undefined, 'music: top-level (no submenu)');
-        },
-      }) as unknown as Promise<void>);
-      statusBar.setRegistered('music', true);
-      statusBar.setError('');
-      note(`✓ registered '${MUSIC_ID}' (no submenu — click fires onClick directly)`);
-    } catch (e: any) {
-      const msg = e?.message ?? String(e);
-      statusBar.setRegistered('music', false);
-      statusBar.setError(msg);
-      note(`music registerItem failed: ${msg}`, false);
+    const res = await context.request<{ ok: boolean; error?: string }>(
+      'statusBar.registerMusic',
+      {},
+    );
+    if (res.ok) {
+      note(`✓ registered 'sdk-music' (no submenu — click fires onClick directly)`);
+    } else {
+      note(`music registerItem failed: ${res.error ?? 'unknown'}`, false);
     }
   }
 
   async function unregisterMusic() {
-    try {
-      await (svc.statusBar.unregisterItem(MUSIC_ID) as unknown as Promise<void>);
-      statusBar.setRegistered('music', false);
-      note(`✓ unregisterItem('${MUSIC_ID}') dispatched`);
-    } catch (e: any) {
-      note(`unregisterItem failed: ${e?.message ?? e}`, false);
-    }
+    await context.request('statusBar.unregisterMusic', {});
+    note(`✓ unregisterItem('sdk-music') dispatched`);
   }
 
-  function tryInvalidRegistration() {
-    try {
-      svc.statusBar.registerItem({
-        id: 'bad-demo',
-        text: 'This will fail',
-      } as any);
-      note('Unexpected: invalid payload slipped through validation', false);
-    } catch (e: any) {
-      note(`✓ validator caught invalid item — ${e?.message ?? e}`);
-    }
+  async function tryInvalidRegistration() {
+    const res = await context.request<{ ok: false; error: string }>(
+      'statusBar.tryInvalid',
+      {},
+    );
+    note(`✓ validator caught invalid item — ${res.error}`);
   }
 
-  onMount(() => {
-    const off = statusBar.subscribe(() => {
-      log = [...statusBar.log];
-      coffeeRegistered = statusBar.coffeeRegistered;
-      musicRegistered = statusBar.musicRegistered;
-      lastError = statusBar.lastError;
-    });
-    onDestroy(off);
-  });
+  async function clearLog() {
+    await context.request('clearLog', { logKey: STATE_KEYS.logsStatusBarClicks });
+  }
 </script>
 
 <div class="section">
@@ -215,10 +141,10 @@
       <span class="section-title">Status Bar Service — Independent Tray Icons</span>
       <span class="section-desc">
         Each top-level <code>IStatusBarItem</code> becomes its own menu-bar tray
-        icon (Raycast <code>MenuBarExtra</code> model). Asyar's own tray stays
-        separate. Register one or both demos below, then click through the
-        dropdown to watch the <code>itemPath</code> / <code>checked</code>
-        payload flow back into the click log.
+        icon (Raycast <code>MenuBarExtra</code> model). Under the worker/view
+        split, the <b>worker</b> owns the tray tree + click callbacks —
+        submenu checkboxes survive launcher restart because their state lives
+        in the broker.
       </span>
     </div>
   </header>
@@ -226,8 +152,8 @@
   <div class="demo-block">
     <div class="demo-head">
       <span class="demo-title">Coffee-pot demo</span>
-      <span class="pill" class:on={coffeeRegistered}>
-        {coffeeRegistered ? 'registered' : 'not registered'}
+      <span class="pill" class:on={registered.coffee}>
+        {registered.coffee ? 'registered' : 'not registered'}
       </span>
     </div>
 
@@ -243,43 +169,43 @@
     </div>
 
     <div class="btn-row">
-      <button class="action-btn" onclick={() => void registerCoffee()}>
+      <button class="action-btn" onclick={registerCoffee}>
         <span class="btn-icon">🍳</span>
         <span class="btn-text">
           <span class="btn-name">Register / Update</span>
-          <span class="btn-hint">statusBar.registerItem(tree)</span>
+          <span class="btn-hint">RPC: statusBar.registerCoffee</span>
         </span>
       </button>
       <button
         class="action-btn danger"
-        onclick={() => void unregisterCoffee()}
-        disabled={!coffeeRegistered}
+        onclick={unregisterCoffee}
+        disabled={!registered.coffee}
       >
         <span class="btn-icon">🗑️</span>
         <span class="btn-text">
           <span class="btn-name">Unregister</span>
-          <span class="btn-hint">statusBar.unregisterItem(id)</span>
+          <span class="btn-hint">RPC: statusBar.unregisterCoffee</span>
         </span>
       </button>
     </div>
 
     <div class="state-row">
-      <span class="state-pill" class:on={playing}>playing: {playing}</span>
-      <span class="state-pill" class:on={muted}>muted: {muted}</span>
-      <span class="state-pill on">volume: {volumeLevel}</span>
+      <span class="state-pill" class:on={tray.playing}>playing: {tray.playing}</span>
+      <span class="state-pill" class:on={tray.muted}>muted: {tray.muted}</span>
+      <span class="state-pill on">volume: {tray.volumeLevel}</span>
     </div>
   </div>
 
   <div class="demo-block">
     <div class="demo-head">
       <span class="demo-title">Music demo (no submenu, top-level onClick)</span>
-      <span class="pill" class:on={musicRegistered}>
-        {musicRegistered ? 'registered' : 'not registered'}
+      <span class="pill" class:on={registered.music}>
+        {registered.music ? 'registered' : 'not registered'}
       </span>
     </div>
 
     <div class="btn-row">
-      <button class="action-btn" onclick={() => void registerMusic()}>
+      <button class="action-btn" onclick={registerMusic}>
         <span class="btn-icon">🎧</span>
         <span class="btn-text">
           <span class="btn-name">Register ♪ icon</span>
@@ -288,13 +214,13 @@
       </button>
       <button
         class="action-btn danger"
-        onclick={() => void unregisterMusic()}
-        disabled={!musicRegistered}
+        onclick={unregisterMusic}
+        disabled={!registered.music}
       >
         <span class="btn-icon">🗑️</span>
         <span class="btn-text">
           <span class="btn-name">Unregister</span>
-          <span class="btn-hint">unregisterItem('{MUSIC_ID}')</span>
+          <span class="btn-hint">RPC: statusBar.unregisterMusic</span>
         </span>
       </button>
     </div>
@@ -308,7 +234,7 @@
       <span class="btn-icon">🚫</span>
       <span class="btn-text">
         <span class="btn-name">Try to register an item with no icon</span>
-        <span class="btn-hint">Should throw before reaching the host</span>
+        <span class="btn-hint">Host returns the Rust error message</span>
       </span>
     </button>
   </div>
@@ -316,7 +242,7 @@
   <div class="output-area">
     <div class="log-head">
       <span class="output-label">CLICK LOG ({log.length})</span>
-      <button class="clear-btn" onclick={() => statusBar.clear()}>Clear</button>
+      <button class="clear-btn" onclick={clearLog}>Clear</button>
     </div>
     {#if log.length === 0}
       <div class="output-body muted">
@@ -325,9 +251,9 @@
       </div>
     {:else}
       <ul class="log-list">
-        {#each [...log].reverse() as entry (entry.timestamp.getTime() + entry.itemPath.join(':'))}
+        {#each [...log].reverse() as entry (entry.at + ':' + entry.itemPath.join(':'))}
           <li class="log-row">
-            <code class="log-time">{formatClock(entry.timestamp)}</code>
+            <code class="log-time">{formatTime(entry.at)}</code>
             <code class="log-path">
               {entry.itemPath.length ? entry.itemPath.join(' › ') : '(meta)'}
             </code>
@@ -358,10 +284,9 @@
       </div>
     {:else}
       <div class="output-body muted">
-        Register one of the demos above to get started. On macOS an emoji
-        renders as a text label in the menu bar (via
-        <code>NSStatusItem.title</code>); provide <code>iconPath</code> for a
-        proper bitmap.
+        Register one of the demos above to get started. Tray registration
+        persists in <code>statusBar.registered</code>; on next launcher boot
+        the worker re-registers from that state.
       </div>
     {/if}
   </div>

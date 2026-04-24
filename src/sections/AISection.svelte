@@ -1,6 +1,16 @@
 <script lang="ts">
-  import { svc } from '../store';
-  import type { AIStreamHandle } from 'asyar-sdk';
+  import type {
+    AIStreamHandle,
+    ExtensionContext,
+    IAIService,
+  } from 'asyar-sdk/view';
+
+  interface Props {
+    context: ExtensionContext;
+  }
+  let { context }: Props = $props();
+
+  const ai = $derived(context.getService<IAIService>('ai'));
 
   let prompt = $state('Tell me a short fun fact about computers.');
   let output = $state('');
@@ -14,7 +24,7 @@
     outputOk = true;
     streaming = true;
 
-    handle = svc.ai.stream(
+    handle = ai.stream(
       { messages: [{ role: 'user', content: prompt }] },
       {
         onToken(token) { output += token; },

@@ -1,28 +1,53 @@
 <script lang="ts">
-  import { scheduling, type TickEvent } from '../store';
+  import { onMount } from 'svelte';
+  import type { ExtensionContext, ExtensionStateProxy } from 'asyar-sdk/view';
+  import { STATE_KEYS, type TickEvent } from '../stateKeys';
+  import { formatTime } from '../lib/timeFormat';
 
-  let ticks = $state<TickEvent[]>([...scheduling.log]);
-
-  $effect(() => {
-    const unsub = scheduling.subscribe((event) => {
-      ticks = [...ticks, event].slice(-50);
-    });
-    return unsub;
-  });
-
-  function formatTime(d: Date): string {
-    return d.toLocaleTimeString(undefined, {
-      hour12: false,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
+  interface Props {
+    context: ExtensionContext;
   }
+  let { context }: Props = $props();
+
+  let ticks = $state<TickEvent[]>([]);
+  const stateProxy = $derived(context.getService<ExtensionStateProxy>('state'));
+
+  onMount(() => {
+    let active = true;
+    const cleanup: Array<() => void | Promise<void>> = [];
+
+    (async () => {
+      const [initial, unsub] = await Promise.all([
+        stateProxy.get(STATE_KEYS.logsScheduling),
+        stateProxy.subscribe(STATE_KEYS.logsScheduling, (v) => {
+          if (!active) return;
+          ticks = Array.isArray(v) ? (v as TickEvent[]) : [];
+        }),
+      ]);
+      if (!active) {
+        void unsub();
+        return;
+      }
+      ticks = Array.isArray(initial) ? (initial as TickEvent[]) : [];
+      cleanup.push(unsub);
+    })();
+
+    return () => {
+      active = false;
+      for (const fn of cleanup) {
+        try {
+          void fn();
+        } catch {
+          // Best-effort teardown
+        }
+      }
+    };
+  });
 
   const subtitle = $derived(
     ticks.length > 0
-      ? `Ticked ${ticks.length} times · Last: ${formatTime(ticks[ticks.length - 1].timestamp)}`
-      : ''
+      ? `Ticked ${ticks.length} times · Last: ${formatTime(ticks[ticks.length - 1].at)}`
+      : '',
   );
 </script>
 
@@ -34,7 +59,6 @@
     </div>
   </header>
 
-  <!-- Current subtitle display -->
   <div class="output-area">
     <span class="output-label">CURRENT SUBTITLE</span>
     {#if subtitle}
@@ -44,7 +68,6 @@
     {/if}
   </div>
 
-  <!-- Stats row -->
   <div class="stats-row">
     <div class="stat">
       <span class="stat-value">{ticks.length}</span>
@@ -56,27 +79,25 @@
     </div>
     <div class="stat">
       <span class="stat-value">
-        {ticks.length > 0 ? formatTime(ticks[ticks.length - 1].timestamp) : '—'}
+        {ticks.length > 0 ? formatTime(ticks[ticks.length - 1].at) : '—'}
       </span>
       <span class="stat-label">Last tick</span>
     </div>
   </div>
 
   <p class="note">
-    This panel updates whenever a tick is recorded — including the Scheduling tab's
-    "Simulate Tick" button. However, <strong>the search result subtitle only updates on a real
-    60-second scheduler tick</strong> — that is the only path that calls
-    <code>executeCommand('tick-test')</code> and triggers <code>updateCommandMetadata()</code>.
-    After a scheduler tick fires, close this view and search for
-    <code>Scheduling Tick Test</code> to see the subtitle live.
+    This panel reads the same <code>logs.scheduling</code> state key that the worker writes on
+    every tick (scheduled or simulated). The search-result subtitle itself is updated via
+    <code>svc.commands.updateCommandMetadata('tick-test', {"{ subtitle }"})</code> inside the
+    worker's <code>executeCommand</code> — only <b>real 60-second scheduler ticks</b> drive
+    that side effect. Close this view and search for
+    <code>Scheduling Tick Test</code> to see it live.
   </p>
 </div>
 
 <style>
   @import './section.css';
 
-  /* output-area has margin-top: auto in section.css (pushes it down in flex containers
-     where it is the last element). Here it is the first element, so override. */
   .output-area {
     margin-top: 0;
   }

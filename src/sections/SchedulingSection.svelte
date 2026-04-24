@@ -1,40 +1,72 @@
 <script lang="ts">
-  import { svc, scheduling, type TickEvent } from '../store';
+  import { onMount } from 'svelte';
+  import type {
+    ExtensionContext,
+    ExtensionStateProxy,
+    IFeedbackService,
+  } from 'asyar-sdk/view';
+  import { STATE_KEYS, type TickEvent } from '../stateKeys';
+  import { formatTime } from '../lib/timeFormat';
 
-  let ticks = $state<TickEvent[]>([...scheduling.log]);
+  interface Props {
+    context: ExtensionContext;
+  }
+  let { context }: Props = $props();
+
+  let ticks = $state<TickEvent[]>([]);
   let log = $state<HTMLElement | null>(null);
 
-  $effect(() => {
-    const unsub = scheduling.subscribe((event) => {
-      ticks = [...ticks, event].slice(-50);
-    });
-    return unsub;
+  const stateProxy = $derived(context.getService<ExtensionStateProxy>('state'));
+  const feedback = $derived(context.getService<IFeedbackService>('feedback'));
+
+  onMount(() => {
+    let active = true;
+    const cleanup: Array<() => void | Promise<void>> = [];
+
+    (async () => {
+      const [initial, unsub] = await Promise.all([
+        stateProxy.get(STATE_KEYS.logsScheduling),
+        stateProxy.subscribe(STATE_KEYS.logsScheduling, (v) => {
+          if (!active) return;
+          ticks = Array.isArray(v) ? (v as TickEvent[]) : [];
+        }),
+      ]);
+      if (!active) {
+        void unsub();
+        return;
+      }
+      ticks = Array.isArray(initial) ? (initial as TickEvent[]) : [];
+      cleanup.push(unsub);
+    })();
+
+    return () => {
+      active = false;
+      for (const fn of cleanup) {
+        try {
+          void fn();
+        } catch {
+          // Best-effort teardown
+        }
+      }
+    };
   });
 
   $effect(() => {
-    // scroll log to bottom whenever ticks change
     ticks;
     if (log) log.scrollTop = log.scrollHeight;
   });
 
-  function formatTime(d: Date): string {
-    return d.toLocaleTimeString(undefined, { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  async function clear() {
+    await context.request('clearLog', { logKey: STATE_KEYS.logsScheduling });
   }
 
-  function clear() {
-    scheduling.log = [];
-    ticks = [];
-  }
-
-  function simulateTick() {
-    // Fires the same code path that the platform scheduler uses,
-    // but without the scheduledTick flag so it's distinguishable in the log.
-    scheduling.recordTick('tick-test', { scheduledTick: false, source: 'manual' });
+  async function simulateTick() {
+    await context.request('simulateScheduledTick', { commandId: 'tick-test' });
   }
 
   async function simulateAndToast() {
-    scheduling.recordTick('tick-test', { scheduledTick: false, source: 'manual' });
-    await svc.feedback.showToast({
+    await context.request('simulateScheduledTick', { commandId: 'tick-test' });
+    await feedback.showToast({
       title: 'Tick recorded',
       message: 'Manual tick added to log (scheduledTick: false)',
       style: 'success',
@@ -62,7 +94,7 @@
     </div>
     <div class="stat">
       <span class="stat-value">
-        {ticks.length > 0 ? formatTime(ticks[ticks.length - 1].timestamp) : '—'}
+        {ticks.length > 0 ? formatTime(ticks[ticks.length - 1].at) : '—'}
       </span>
       <span class="stat-label">Last tick</span>
     </div>
@@ -74,14 +106,14 @@
       <span class="btn-icon">⚡</span>
       <span class="btn-text">
         <span class="btn-name">Simulate Tick</span>
-        <span class="btn-hint">{'recordTick({scheduledTick: false})'}</span>
+        <span class="btn-hint">context.request('simulateScheduledTick')</span>
       </span>
     </button>
     <button class="action-btn" onclick={simulateAndToast}>
       <span class="btn-icon">🍞</span>
       <span class="btn-text">
         <span class="btn-name">Tick + Toast</span>
-        <span class="btn-hint">recordTick + feedback.showToast()</span>
+        <span class="btn-hint">simulate + feedback.showToast()</span>
       </span>
     </button>
   </div>
@@ -102,7 +134,7 @@
       {:else}
         {#each ticks as tick}
           <div class="tick-row" class:scheduled={tick.isScheduled}>
-            <span class="tick-time">{formatTime(tick.timestamp)}</span>
+            <span class="tick-time">{formatTime(tick.at)}</span>
             <span class="tick-badge" class:badge-scheduled={tick.isScheduled} class:badge-manual={!tick.isScheduled}>
               {tick.isScheduled ? 'SCHEDULER' : 'MANUAL'}
             </span>
@@ -119,17 +151,18 @@
   <p class="note">
     Two commands in <code>manifest.json</code> declare schedules:
     <code>tick-test</code> at <code>intervalSeconds: 60</code> and
-    <code>tick-test-fast</code> at <code>intervalSeconds: 10</code> — the new platform floor.
-    The platform (Rust tokio) owns both timers; your extension receives normal
-    <code>executeCommand()</code> calls with <code>{"{ scheduledTick: true }"}</code> in args.
-    Scheduled ticks keep firing whether or not the launcher window is visible.
+    <code>tick-test-fast</code> at <code>intervalSeconds: 10</code> — the platform floor.
+    The Rust scheduler fires into the <b>worker</b> iframe's
+    <code>executeCommand()</code> with <code>{"{ scheduledTick: true }"}</code> in args; the
+    worker appends to the <code>logs.scheduling</code> state key which this
+    view is subscribed to. Scheduled ticks keep firing whether or not the
+    launcher window is visible.
   </p>
 </div>
 
 <style>
   @import './section.css';
 
-  /* Stats row */
   .stats-row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -165,7 +198,6 @@
     opacity: 0.5;
   }
 
-  /* Log */
   .log-area {
     display: flex;
     flex-direction: column;
@@ -276,7 +308,6 @@
     word-break: break-all;
   }
 
-  /* Note */
   .note {
     font-size: 10px;
     color: var(--text-secondary);

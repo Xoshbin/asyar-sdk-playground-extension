@@ -1,6 +1,21 @@
 <script lang="ts">
-  import type { TimerDescriptor } from 'asyar-sdk';
-  import { svc, timerFires, type TimerFireEntry } from '../store';
+  import { onMount } from 'svelte';
+  import type {
+    ExtensionContext,
+    ExtensionStateProxy,
+    ITimerService,
+    TimerDescriptor,
+  } from 'asyar-sdk/view';
+  import { STATE_KEYS, type TimerFireLogEntry } from '../stateKeys';
+  import { formatTime } from '../lib/timeFormat';
+
+  interface Props {
+    context: ExtensionContext;
+  }
+  let { context }: Props = $props();
+
+  const timers = $derived(context.getService<ITimerService>('timers'));
+  const stateProxy = $derived(context.getService<ExtensionStateProxy>('state'));
 
   let loading = $state(false);
   let output = $state('');
@@ -15,15 +30,8 @@
   // List state
   let pending = $state<TimerDescriptor[]>([]);
 
-  // Fire-log state (mirrors timerFires store)
-  let fires = $state<TimerFireEntry[]>([...timerFires.log]);
-
-  $effect(() => {
-    const unsub = timerFires.subscribe(() => {
-      fires = [...timerFires.log];
-    });
-    return unsub;
-  });
+  // Fire-log mirrors state key.
+  let fires = $state<TimerFireLogEntry[]>([]);
 
   function setOutput(msg: string, ok = true) {
     output = msg;
@@ -31,12 +39,7 @@
   }
 
   function fmtAbs(unixMs: number): string {
-    return new Date(unixMs).toLocaleTimeString(undefined, {
-      hour12: false,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
+    return formatTime(unixMs);
   }
 
   function fmtRel(unixMs: number): string {
@@ -50,7 +53,7 @@
 
   async function refresh() {
     try {
-      pending = await svc.timers.list();
+      pending = await timers.list();
     } catch (e: any) {
       setOutput(`list() error: ${e?.message ?? e}`, false);
     }
@@ -64,11 +67,8 @@
     loading = true;
     try {
       const fireAt = Date.now() + secondsFromNow * 1000;
-      const args =
-        commandId === 'timer-ring'
-          ? { label }
-          : { minutes };
-      const id = await svc.timers.schedule({ commandId, fireAt, args });
+      const args = commandId === 'timer-ring' ? { label } : { minutes };
+      const id = await timers.schedule({ commandId, fireAt, args });
       setOutput(`✓ Scheduled ${commandId} — id: ${id.slice(0, 8)}… at ${fmtAbs(fireAt)}`);
       await refresh();
     } catch (e: any) {
@@ -81,7 +81,7 @@
   async function cancelOne(id: string) {
     loading = true;
     try {
-      await svc.timers.cancel(id);
+      await timers.cancel(id);
       setOutput(`✓ Cancelled ${id.slice(0, 8)}…`);
       await refresh();
     } catch (e: any) {
@@ -99,7 +99,7 @@
     loading = true;
     try {
       const ids = pending.map((t) => t.timerId);
-      await Promise.all(ids.map((id) => svc.timers.cancel(id)));
+      await Promise.all(ids.map((id) => timers.cancel(id)));
       setOutput(`✓ Cancelled ${ids.length} timer(s)`);
       await refresh();
     } catch (e: any) {
@@ -109,16 +109,44 @@
     }
   }
 
-  function clearLog() {
-    timerFires.clear();
+  async function clearLog() {
+    await context.request('clearLog', { logKey: STATE_KEYS.logsTimerFires });
   }
 
-  $effect(() => {
-    refresh();
-    // Live-refresh the pending list every 2s so the relative-time hints
-    // stay accurate and rows disappear when they fire.
-    const int = setInterval(refresh, 2000);
-    return () => clearInterval(int);
+  onMount(() => {
+    let active = true;
+    const cleanup: Array<() => void | Promise<void>> = [];
+
+    (async () => {
+      const [initial, unsub] = await Promise.all([
+        stateProxy.get(STATE_KEYS.logsTimerFires),
+        stateProxy.subscribe(STATE_KEYS.logsTimerFires, (v) => {
+          if (!active) return;
+          fires = Array.isArray(v) ? (v as TimerFireLogEntry[]) : [];
+        }),
+      ]);
+      if (!active) {
+        void unsub();
+        return;
+      }
+      fires = Array.isArray(initial) ? (initial as TimerFireLogEntry[]) : [];
+      cleanup.push(unsub);
+    })();
+
+    void refresh();
+    const interval = window.setInterval(refresh, 2000);
+    cleanup.push(() => window.clearInterval(interval));
+
+    return () => {
+      active = false;
+      for (const fn of cleanup) {
+        try {
+          void fn();
+        } catch {
+          // Best-effort teardown
+        }
+      }
+    };
   });
 </script>
 
@@ -128,9 +156,9 @@
       <span class="section-title">Timer Service</span>
       <span class="section-desc">
         Persistent one-shot timers — Rust persists every schedule to SQLite.
-        Timers fire even after the launcher is quit and relaunched. Separate
-        permissions per verb: <code>timers:schedule</code>,
-        <code>timers:cancel</code>, <code>timers:list</code>.
+        Timers fire even after the launcher is quit and relaunched. The fire
+        commandId (<code>timer-ring</code> / <code>timer-snooze</code>) lands
+        in the <b>worker</b>, which appends to <code>logs.timerFires</code>.
       </span>
     </div>
   </header>
@@ -218,9 +246,7 @@
     {#if pending.length === 0}
       <div class="output-body muted">
         No pending timers. Schedule one above — the row appears here and
-        disappears the moment the Rust scheduler fires it. Close the launcher
-        before fire time to prove persistence: the fire still happens at the
-        next launch.
+        disappears the moment the Rust scheduler fires it.
       </div>
     {:else}
       <ul class="active-list">
@@ -253,15 +279,14 @@
     <div class="log-body">
       {#if fires.length === 0}
         <div class="log-empty">
-          No fires yet. Schedule a short timer (say, 5 seconds), then watch
-          the row leave "pending" above and show up here when the Rust
-          scheduler emits `asyar:timer:fire` and the launcher bridge
-          dispatches the command into this iframe.
+          No fires yet. Schedule a short timer (say, 5 seconds), dismiss the
+          launcher for longer than the delay, reopen — the row should appear
+          here even though the view was Dormant at fire time.
         </div>
       {:else}
         {#each fires as e}
           <div class="tick-row">
-            <span class="tick-time">{e.timestamp.toLocaleTimeString(undefined, { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+            <span class="tick-time">{formatTime(e.at)}</span>
             <span class="tick-badge badge-scheduled">{e.commandId}</span>
             <span class="tick-args">{e.note}</span>
           </div>

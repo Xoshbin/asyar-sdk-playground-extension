@@ -1,123 +1,133 @@
 <script lang="ts">
-  import type { Disposer } from 'asyar-sdk';
-  import { svc } from '../store';
+  import { onMount } from 'svelte';
+  import type { ExtensionContext, ExtensionStateProxy } from 'asyar-sdk/view';
+  import {
+    STATE_KEYS,
+    type CounterMap,
+    type SystemEventKind,
+    type SystemEventLogEntry,
+  } from '../stateKeys';
+  import { formatTime } from '../lib/timeFormat';
 
-  type Kind =
-    | 'sleep'
-    | 'wake'
-    | 'lid-open'
-    | 'lid-close'
-    | 'battery-level-changed'
-    | 'power-source-changed';
+  interface Props {
+    context: ExtensionContext;
+  }
+  let { context }: Props = $props();
 
-  interface Row {
-    kind: Kind;
+  type KindRow = {
+    kind: SystemEventKind;
     label: string;
     emoji: string;
-    dispose: Disposer | null;
-    count: number;
-    last: string;
-  }
+  };
 
-  const rows: Row[] = $state([
-    { kind: 'sleep',                 label: 'Sleep',          emoji: '😴', dispose: null, count: 0, last: '' },
-    { kind: 'wake',                  label: 'Wake',           emoji: '☀️', dispose: null, count: 0, last: '' },
-    { kind: 'lid-open',              label: 'Lid Open',       emoji: '💻', dispose: null, count: 0, last: '' },
-    { kind: 'lid-close',             label: 'Lid Close',      emoji: '📕', dispose: null, count: 0, last: '' },
-    { kind: 'battery-level-changed', label: 'Battery Level',  emoji: '🔋', dispose: null, count: 0, last: '' },
-    { kind: 'power-source-changed',  label: 'Power Source',   emoji: '🔌', dispose: null, count: 0, last: '' },
-  ]);
+  const rows: readonly KindRow[] = [
+    { kind: 'sleep',                 label: 'Sleep',         emoji: '😴' },
+    { kind: 'wake',                  label: 'Wake',          emoji: '☀️' },
+    { kind: 'lid-open',              label: 'Lid Open',      emoji: '💻' },
+    { kind: 'lid-close',             label: 'Lid Close',     emoji: '📕' },
+    { kind: 'battery-level-changed', label: 'Battery Level', emoji: '🔋' },
+    { kind: 'power-source-changed',  label: 'Power Source',  emoji: '🔌' },
+  ];
 
-  interface LogEntry {
-    at: Date;
-    kind: Kind;
-    payload: string;
-  }
+  let enabled = $state<Partial<Record<SystemEventKind, boolean>>>({});
+  let counters = $state<CounterMap<SystemEventKind>>({} as CounterMap<SystemEventKind>);
+  let log = $state<SystemEventLogEntry[]>([]);
 
-  let log = $state<LogEntry[]>([]);
+  const stateProxy = $derived(context.getService<ExtensionStateProxy>('state'));
 
-  function fmtTime(d: Date): string {
-    return d.toLocaleTimeString(undefined, {
-      hour12: false,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
-  }
+  onMount(() => {
+    let active = true;
+    const cleanup: Array<() => void | Promise<void>> = [];
 
-  function push(kind: Kind, payload: string) {
-    const row = rows.find((r) => r.kind === kind);
-    if (row) {
-      row.count += 1;
-      row.last = payload;
-    }
-    log = [...log, { at: new Date(), kind, payload }].slice(-50);
-  }
+    (async () => {
+      const [subs, cnt, lg, uSubs, uCnt, uLog] = await Promise.all([
+        stateProxy.get(STATE_KEYS.subsSystemEvents),
+        stateProxy.get(STATE_KEYS.countersSystemEvents),
+        stateProxy.get(STATE_KEYS.logsSystemEvents),
+        stateProxy.subscribe(STATE_KEYS.subsSystemEvents, (v) => {
+          if (!active) return;
+          enabled = (v as Partial<Record<SystemEventKind, boolean>> | null) ?? {};
+        }),
+        stateProxy.subscribe(STATE_KEYS.countersSystemEvents, (v) => {
+          if (!active) return;
+          counters = (v as CounterMap<SystemEventKind> | null) ?? ({} as CounterMap<SystemEventKind>);
+        }),
+        stateProxy.subscribe(STATE_KEYS.logsSystemEvents, (v) => {
+          if (!active) return;
+          log = Array.isArray(v) ? (v as SystemEventLogEntry[]) : [];
+        }),
+      ]);
 
-  function toggle(row: Row) {
-    if (row.dispose) {
-      row.dispose();
-      row.dispose = null;
-      return;
-    }
+      if (!active) {
+        void uSubs();
+        void uCnt();
+        void uLog();
+        return;
+      }
 
-    // Fresh subscription — wire the correct on* method per kind.
-    switch (row.kind) {
-      case 'sleep':
-        row.dispose = svc.systemEvents.onSystemSleep(() => push('sleep', '(no payload)'));
-        break;
-      case 'wake':
-        row.dispose = svc.systemEvents.onSystemWake(() => push('wake', '(no payload)'));
-        break;
-      case 'lid-open':
-        row.dispose = svc.systemEvents.onLidOpen(() => push('lid-open', '(no payload)'));
-        break;
-      case 'lid-close':
-        row.dispose = svc.systemEvents.onLidClose(() => push('lid-close', '(no payload)'));
-        break;
-      case 'battery-level-changed':
-        row.dispose = svc.systemEvents.onBatteryLevelChange((percent) =>
-          push('battery-level-changed', `${percent}%`),
-        );
-        break;
-      case 'power-source-changed':
-        row.dispose = svc.systemEvents.onPowerSourceChange((onBattery) =>
-          push('power-source-changed', onBattery ? 'on battery' : 'on AC'),
-        );
-        break;
-    }
-  }
+      enabled = (subs as Partial<Record<SystemEventKind, boolean>> | null) ?? {};
+      counters = (cnt as CounterMap<SystemEventKind> | null) ?? ({} as CounterMap<SystemEventKind>);
+      log = Array.isArray(lg) ? (lg as SystemEventLogEntry[]) : [];
 
-  function subscribeAll() {
-    for (const row of rows) {
-      if (!row.dispose) toggle(row);
-    }
-  }
+      cleanup.push(uSubs, uCnt, uLog);
+    })();
 
-  function unsubscribeAll() {
-    for (const row of rows) {
-      if (row.dispose) toggle(row);
-    }
-  }
-
-  function resetCounts() {
-    for (const row of rows) {
-      row.count = 0;
-      row.last = '';
-    }
-    log = [];
-  }
-
-  // Idempotent dispose for every row — fires when the iframe unloads or the
-  // section is unmounted. Prevents leaking subscriptions on the Rust side.
-  $effect(() => {
     return () => {
-      for (const row of rows) {
-        row.dispose?.();
-        row.dispose = null;
+      active = false;
+      for (const fn of cleanup) {
+        try {
+          void fn();
+        } catch {
+          // Best-effort teardown
+        }
       }
     };
   });
+
+  async function toggle(kind: SystemEventKind) {
+    const next = !(enabled[kind] === true);
+    await context.request('toggleSubscription', {
+      surface: 'systemEvents',
+      kind,
+      enabled: next,
+    });
+  }
+
+  async function subscribeAll() {
+    for (const row of rows) {
+      if (!(enabled[row.kind] === true)) {
+        await context.request('toggleSubscription', {
+          surface: 'systemEvents',
+          kind: row.kind,
+          enabled: true,
+        });
+      }
+    }
+  }
+
+  async function unsubscribeAll() {
+    for (const row of rows) {
+      if (enabled[row.kind] === true) {
+        await context.request('toggleSubscription', {
+          surface: 'systemEvents',
+          kind: row.kind,
+          enabled: false,
+        });
+      }
+    }
+  }
+
+  async function resetCounts() {
+    await context.request('resetCounters', { surface: 'systemEvents' });
+    await context.request('clearLog', { logKey: STATE_KEYS.logsSystemEvents });
+  }
+
+  function countFor(kind: SystemEventKind): number {
+    return counters[kind]?.count ?? 0;
+  }
+  function lastFor(kind: SystemEventKind): string {
+    return counters[kind]?.last ?? '';
+  }
 </script>
 
 <div class="section">
@@ -125,11 +135,11 @@
     <div>
       <span class="section-title">System Events Service</span>
       <span class="section-desc">
-        Subscribe to OS-level push events. Flip a toggle to call
-        <code>onSystemWake(cb)</code> etc; flip it back to dispose. The SDK
-        proxy ref-counts per event kind — check your launcher logs: the second
-        toggle of a kind should NOT emit a new
-        <code>systemEvents:subscribe</code> RPC.
+        Worker-owned push subscriptions. Flip a toggle to dispatch
+        <code>toggleSubscription</code> to the worker — the subscription
+        installs in the worker iframe and its state survives view-iframe
+        Dormant. Events keep landing in <code>logs.systemEvents</code> even
+        while the launcher is dismissed.
       </span>
     </div>
   </header>
@@ -139,7 +149,7 @@
       <span class="btn-icon">✅</span>
       <span class="btn-text">
         <span class="btn-name">Subscribe All</span>
-        <span class="btn-hint">one RPC per kind</span>
+        <span class="btn-hint">one toggle per kind</span>
       </span>
     </button>
     <button class="action-btn" onclick={unsubscribeAll}>
@@ -160,15 +170,15 @@
 
   <ul class="rows">
     {#each rows as row (row.kind)}
-      <li class="row" class:active={row.dispose !== null}>
-        <button class="row-toggle" onclick={() => toggle(row)}>
+      <li class="row" class:active={enabled[row.kind] === true}>
+        <button class="row-toggle" onclick={() => toggle(row.kind)}>
           <span class="row-emoji">{row.emoji}</span>
           <span class="row-label">{row.label}</span>
-          <span class="row-state">{row.dispose ? 'ON' : 'OFF'}</span>
+          <span class="row-state">{enabled[row.kind] === true ? 'ON' : 'OFF'}</span>
         </button>
         <div class="row-stats">
-          <span class="count-pill">{row.count}×</span>
-          <span class="last">{row.last || '—'}</span>
+          <span class="count-pill">{countFor(row.kind)}×</span>
+          <span class="last">{lastFor(row.kind) || '—'}</span>
         </div>
       </li>
     {/each}
@@ -185,7 +195,7 @@
     {:else}
       <div class="output-body">
         {#each log.slice().reverse() as entry}
-          {fmtTime(entry.at)} · {entry.kind} · {entry.payload}
+          {formatTime(entry.at)} · {entry.kind} · {entry.payload}
 {'\n'}
         {/each}
       </div>

@@ -1,13 +1,28 @@
 <script lang="ts">
-  import { svc } from '../store';
+  import { onMount } from 'svelte';
   import type {
-    AppPresenceEvent,
-    Disposer,
+    ExtensionContext,
+    ExtensionStateProxy,
     FrontmostApplication,
-  } from 'asyar-sdk';
+    IApplicationService,
+  } from 'asyar-sdk/view';
+  import {
+    STATE_KEYS,
+    type ApplicationLogEntry,
+    type ApplicationPushKind,
+    type CounterMap,
+  } from '../stateKeys';
+  import { formatTime } from '../lib/timeFormat';
 
-  // ── query surface state ─────────────────────────────────────────────
+  interface Props {
+    context: ExtensionContext;
+  }
+  let { context }: Props = $props();
 
+  const applicationService = $derived(context.getService<IApplicationService>('application'));
+  const stateProxy = $derived(context.getService<ExtensionStateProxy>('state'));
+
+  // ── query surface (view-driven, direct proxy) ──────────────────────────
   let loadingFront = $state(false);
   let front = $state<FrontmostApplication | null>(null);
   let queryError = $state('');
@@ -21,7 +36,7 @@
     loadingFront = true;
     queryError = '';
     try {
-      front = await svc.application.getFrontmostApplication();
+      front = await applicationService.getFrontmostApplication();
     } catch (e: any) {
       queryError = e.code ?? e.message ?? String(e);
       front = null;
@@ -35,7 +50,7 @@
     isRunningBusy = true;
     isRunningError = '';
     try {
-      isRunningResult = await svc.application.isRunning(bundleId.trim());
+      isRunningResult = await applicationService.isRunning(bundleId.trim());
     } catch (e: any) {
       isRunningError = e.code ?? e.message ?? String(e);
       isRunningResult = null;
@@ -44,101 +59,116 @@
     }
   }
 
-  // ── push surface state ──────────────────────────────────────────────
-
-  type PushKind = 'launched' | 'terminated' | 'frontmost-changed';
-
-  interface Row {
-    kind: PushKind;
+  // ── push surface (worker-owned, state broker) ──────────────────────────
+  type KindRow = {
+    kind: ApplicationPushKind;
     label: string;
     emoji: string;
-    dispose: Disposer | null;
-    count: number;
-    last: string;
-  }
+  };
 
-  const rows: Row[] = $state([
-    { kind: 'launched',          label: 'Launched',           emoji: '🚀', dispose: null, count: 0, last: '' },
-    { kind: 'terminated',        label: 'Terminated',         emoji: '💀', dispose: null, count: 0, last: '' },
-    { kind: 'frontmost-changed', label: 'Frontmost Changed',  emoji: '🎯', dispose: null, count: 0, last: '' },
-  ]);
+  const rows: readonly KindRow[] = [
+    { kind: 'launched',          label: 'Launched',          emoji: '🚀' },
+    { kind: 'terminated',        label: 'Terminated',        emoji: '💀' },
+    { kind: 'frontmost-changed', label: 'Frontmost Changed', emoji: '🎯' },
+  ];
 
-  interface LogEntry {
-    at: Date;
-    kind: PushKind;
-    summary: string;
-  }
+  let enabled = $state<Partial<Record<ApplicationPushKind, boolean>>>({});
+  let counters = $state<CounterMap<ApplicationPushKind>>({} as CounterMap<ApplicationPushKind>);
+  let log = $state<ApplicationLogEntry[]>([]);
 
-  let log = $state<LogEntry[]>([]);
+  onMount(() => {
+    let active = true;
+    const cleanup: Array<() => void | Promise<void>> = [];
 
-  function fmtTime(d: Date): string {
-    return d.toLocaleTimeString(undefined, {
-      hour12: false,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
-  }
+    (async () => {
+      const [subs, cnt, lg, uSubs, uCnt, uLog] = await Promise.all([
+        stateProxy.get(STATE_KEYS.subsApplication),
+        stateProxy.get(STATE_KEYS.countersApplication),
+        stateProxy.get(STATE_KEYS.logsApplication),
+        stateProxy.subscribe(STATE_KEYS.subsApplication, (v) => {
+          if (!active) return;
+          enabled = (v as Partial<Record<ApplicationPushKind, boolean>> | null) ?? {};
+        }),
+        stateProxy.subscribe(STATE_KEYS.countersApplication, (v) => {
+          if (!active) return;
+          counters = (v as CounterMap<ApplicationPushKind> | null) ?? ({} as CounterMap<ApplicationPushKind>);
+        }),
+        stateProxy.subscribe(STATE_KEYS.logsApplication, (v) => {
+          if (!active) return;
+          log = Array.isArray(v) ? (v as ApplicationLogEntry[]) : [];
+        }),
+      ]);
 
-  function summary(e: AppPresenceEvent): string {
-    const id = e.bundleId ? ` · ${e.bundleId}` : '';
-    return `${e.name} (pid ${e.pid})${id}`;
-  }
+      if (!active) {
+        void uSubs();
+        void uCnt();
+        void uLog();
+        return;
+      }
 
-  function push(kind: PushKind, e: AppPresenceEvent) {
-    const row = rows.find((r) => r.kind === kind);
-    if (row) {
-      row.count += 1;
-      row.last = summary(e);
-    }
-    log = [...log, { at: new Date(), kind, summary: summary(e) }].slice(-50);
-  }
+      enabled = (subs as Partial<Record<ApplicationPushKind, boolean>> | null) ?? {};
+      counters = (cnt as CounterMap<ApplicationPushKind> | null) ?? ({} as CounterMap<ApplicationPushKind>);
+      log = Array.isArray(lg) ? (lg as ApplicationLogEntry[]) : [];
 
-  function toggle(row: Row) {
-    if (row.dispose) {
-      row.dispose();
-      row.dispose = null;
-      return;
-    }
-    switch (row.kind) {
-      case 'launched':
-        row.dispose = svc.application.onApplicationLaunched((e) => push('launched', e));
-        break;
-      case 'terminated':
-        row.dispose = svc.application.onApplicationTerminated((e) => push('terminated', e));
-        break;
-      case 'frontmost-changed':
-        row.dispose = svc.application.onFrontmostApplicationChanged((e) =>
-          push('frontmost-changed', e),
-        );
-        break;
-    }
-  }
+      cleanup.push(uSubs, uCnt, uLog);
+    })();
 
-  function subscribeAll() {
-    for (const row of rows) if (!row.dispose) toggle(row);
-  }
-
-  function unsubscribeAll() {
-    for (const row of rows) if (row.dispose) toggle(row);
-  }
-
-  function resetCounts() {
-    for (const row of rows) {
-      row.count = 0;
-      row.last = '';
-    }
-    log = [];
-  }
-
-  $effect(() => {
     return () => {
-      for (const row of rows) {
-        row.dispose?.();
-        row.dispose = null;
+      active = false;
+      for (const fn of cleanup) {
+        try {
+          void fn();
+        } catch {
+          // Best-effort teardown
+        }
       }
     };
   });
+
+  async function toggle(kind: ApplicationPushKind) {
+    const next = !(enabled[kind] === true);
+    await context.request('toggleSubscription', {
+      surface: 'application',
+      kind,
+      enabled: next,
+    });
+  }
+
+  async function subscribeAll() {
+    for (const row of rows) {
+      if (!(enabled[row.kind] === true)) {
+        await context.request('toggleSubscription', {
+          surface: 'application',
+          kind: row.kind,
+          enabled: true,
+        });
+      }
+    }
+  }
+
+  async function unsubscribeAll() {
+    for (const row of rows) {
+      if (enabled[row.kind] === true) {
+        await context.request('toggleSubscription', {
+          surface: 'application',
+          kind: row.kind,
+          enabled: false,
+        });
+      }
+    }
+  }
+
+  async function resetCounts() {
+    await context.request('resetCounters', { surface: 'application' });
+    await context.request('clearLog', { logKey: STATE_KEYS.logsApplication });
+  }
+
+  function countFor(kind: ApplicationPushKind): number {
+    return counters[kind]?.count ?? 0;
+  }
+  function lastFor(kind: ApplicationPushKind): string {
+    return counters[kind]?.last ?? '';
+  }
 </script>
 
 <div class="section">
@@ -146,11 +176,9 @@
     <div>
       <span class="section-title">Application Service</span>
       <span class="section-desc">
-        Query surface (<code>application:*</code>, permission
-        <code>application:read</code>) plus push surface
-        (<code>appEvents:*</code>, permission
-        <code>app:frontmost-watch</code>). Raycast has no equivalent for the
-        push surface.
+        Query surface (view-driven, <code>application:*</code>) plus push
+        surface (worker-owned, <code>appEvents:*</code>). Push events land in
+        <code>logs.application</code> even while the launcher is dismissed.
       </span>
     </div>
   </header>
@@ -237,17 +265,14 @@
     {/if}
   </div>
 
-  <!-- ── Push: on* subscriptions ── -->
+  <!-- ── Push: state-broker subscriptions ── -->
   <header class="section-header">
     <div>
       <span class="section-title">Push events</span>
       <span class="section-desc">
-        Toggle a kind on to call <code>onApplicationLaunched(cb)</code> /
-        <code>onApplicationTerminated(cb)</code> /
-        <code>onFrontmostApplicationChanged(cb)</code>. Flip it off to dispose.
-        The SDK proxy ref-counts per kind — the second toggle of the same kind
-        should NOT cause a new <code>appEvents:subscribe</code> RPC in launcher
-        logs.
+        Toggle a kind on to dispatch <code>toggleSubscription</code> to the
+        worker. Events land in <code>logs.application</code> and per-kind
+        counters, which this view subscribes to.
       </span>
     </div>
   </header>
@@ -257,7 +282,7 @@
       <span class="btn-icon">✅</span>
       <span class="btn-text">
         <span class="btn-name">Subscribe All</span>
-        <span class="btn-hint">one RPC per kind</span>
+        <span class="btn-hint">one toggle per kind</span>
       </span>
     </button>
     <button class="action-btn" onclick={unsubscribeAll}>
@@ -278,15 +303,15 @@
 
   <ul class="rows">
     {#each rows as row (row.kind)}
-      <li class="row" class:active={row.dispose !== null}>
-        <button class="row-toggle" onclick={() => toggle(row)}>
+      <li class="row" class:active={enabled[row.kind] === true}>
+        <button class="row-toggle" onclick={() => toggle(row.kind)}>
           <span class="row-emoji">{row.emoji}</span>
           <span class="row-label">{row.label}</span>
-          <span class="row-state">{row.dispose ? 'ON' : 'OFF'}</span>
+          <span class="row-state">{enabled[row.kind] === true ? 'ON' : 'OFF'}</span>
         </button>
         <div class="row-stats">
-          <span class="count-pill">{row.count}×</span>
-          <span class="last">{row.last || '—'}</span>
+          <span class="count-pill">{countFor(row.kind)}×</span>
+          <span class="last">{lastFor(row.kind) || '—'}</span>
         </div>
       </li>
     {/each}
@@ -303,7 +328,7 @@
     {:else}
       <div class="output-body">
         {#each log.slice().reverse() as entry}
-          {fmtTime(entry.at)} · {entry.kind} · {entry.summary}
+          {formatTime(entry.at)} · {entry.kind} · {entry.summary}
 {'\n'}
         {/each}
       </div>

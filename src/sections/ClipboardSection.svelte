@@ -1,5 +1,12 @@
 <script lang="ts">
-  import { svc } from '../store';
+  import type { ExtensionContext, IClipboardHistoryService } from 'asyar-sdk/view';
+
+  interface Props {
+    context: ExtensionContext;
+  }
+  let { context }: Props = $props();
+
+  const clipboard = $derived(context.getService<IClipboardHistoryService>('clipboard'));
 
   let loading = $state(false);
   let output = $state('');
@@ -10,7 +17,7 @@
   async function readClipboard() {
     loading = true;
     try {
-      const result = await svc.clipboard.readCurrentClipboard();
+      const result = await clipboard.readCurrentClipboard();
       if (!result) { setOutput('(clipboard is empty)'); return; }
       const content = typeof result.content === 'string' && result.content.length > 400
         ? result.content.slice(0, 400) + '…'

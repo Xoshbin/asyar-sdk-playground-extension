@@ -1,5 +1,12 @@
 <script lang="ts">
-  import { svc } from '../store';
+  import type { ExtensionContext, IInteropService } from 'asyar-sdk/view';
+
+  interface Props {
+    context: ExtensionContext;
+  }
+  let { context }: Props = $props();
+
+  const interop = $derived(context.getService<IInteropService>('interop'));
 
   let loading = $state(false);
   let output = $state('');
@@ -14,7 +21,7 @@
     loading = true;
     try {
       const parsedArgs = args.trim() ? JSON.parse(args) : undefined;
-      await svc.interop.launchCommand(extensionId, commandId, parsedArgs);
+      await interop.launchCommand(extensionId, commandId, parsedArgs);
       setOutput(`Launched: ${extensionId} / ${commandId}`);
     } catch (e: any) { setOutput(`Error: ${e.message ?? e}`, false); }
     finally { loading = false; }
@@ -23,7 +30,7 @@
   async function launchNotFound() {
     loading = true;
     try {
-      await svc.interop.launchCommand('com.nonexistent.extension', 'run');
+      await interop.launchCommand('com.nonexistent.extension', 'run');
       setOutput('Unexpected success — should have thrown');
     } catch (e: any) { setOutput(`Error (expected): ${e.message ?? e}`, false); }
     finally { loading = false; }

@@ -1,6 +1,16 @@
 <script lang="ts">
-  import type { ActiveInhibitor } from 'asyar-sdk';
-  import { svc } from '../store';
+  import type {
+    ActiveInhibitor,
+    ExtensionContext,
+    IPowerService,
+  } from 'asyar-sdk/view';
+
+  interface Props {
+    context: ExtensionContext;
+  }
+  let { context }: Props = $props();
+
+  const power = $derived(context.getService<IPowerService>('power'));
 
   let loading = $state(false);
   let output = $state('');
@@ -28,7 +38,7 @@
   async function keepAwake() {
     loading = true;
     try {
-      const token = await svc.power.keepAwake({ system, display, disk, reason });
+      const token = await power.keepAwake({ system, display, disk, reason });
       setOutput(`✓ Acquired inhibitor — token: ${token}`);
       await refresh();
     } catch (e: any) {
@@ -46,7 +56,7 @@
     loading = true;
     const token = active[0].token;
     try {
-      await svc.power.release(token);
+      await power.release(token);
       setOutput(`✓ Released ${token}`);
       await refresh();
     } catch (e: any) {
@@ -64,7 +74,7 @@
     loading = true;
     try {
       const tokens = active.map((i) => i.token);
-      await Promise.all(tokens.map((t) => svc.power.release(t)));
+      await Promise.all(tokens.map((t) => power.release(t)));
       setOutput(`✓ Released ${tokens.length} inhibitor(s)`);
       await refresh();
     } catch (e: any) {
@@ -76,7 +86,7 @@
 
   async function refresh() {
     try {
-      active = await svc.power.list();
+      active = await power.list();
     } catch (e: any) {
       setOutput(`list() error: ${e?.message ?? e}`, false);
     }
@@ -92,10 +102,8 @@
     <div>
       <span class="section-title">Power Service</span>
       <span class="section-desc">
-        Prevent OS sleep during long-running work. macOS uses IOKit power
-        assertions, Linux uses logind DBus, Windows uses
-        <code>SetThreadExecutionState</code>. Tokens survive iframe reload — call
-        <b>list()</b> to rediscover.
+        Prevent OS sleep during long-running work. Tokens survive iframe
+        reload — call <b>list()</b> to rediscover.
       </span>
     </div>
   </header>
@@ -204,9 +212,7 @@
       <div class="output-body" class:ok={outputOk} class:err={!outputOk}>{output}</div>
     {:else}
       <div class="output-body muted">
-        Toggle axes, set a reason, then Keep Awake. Check macOS
-        <code>pmset -g assertions</code> or Linux
-        <code>systemd-inhibit --list</code> to see real OS state.
+        Toggle axes, set a reason, then Keep Awake.
       </div>
     {/if}
   </div>

@@ -1,5 +1,12 @@
 <script lang="ts">
-  import { svc } from '../store';
+  import type { ExtensionContext, IFileManagerService } from 'asyar-sdk/view';
+
+  interface Props {
+    context: ExtensionContext;
+  }
+  let { context }: Props = $props();
+
+  const fileManager = $derived(context.getService<IFileManagerService>('fs'));
 
   let loading = $state(false);
   let output = $state('');
@@ -12,7 +19,7 @@
     if (!path.trim()) { setOutput('Enter a path first', false); return; }
     loading = true;
     try {
-      await svc.fileManager.showInFileManager(path);
+      await fileManager.showInFileManager(path);
       setOutput(`Revealed: ${path}`);
     } catch (e: any) { setOutput(`Error: ${e.message ?? e}`, false); }
     finally { loading = false; }
@@ -22,7 +29,7 @@
     if (!path.trim()) { setOutput('Enter a path first', false); return; }
     loading = true;
     try {
-      await svc.fileManager.trash(path);
+      await fileManager.trash(path);
       setOutput(`Trashed: ${path}`);
     } catch (e: any) { setOutput(`Error: ${e.message ?? e}`, false); }
     finally { loading = false; }

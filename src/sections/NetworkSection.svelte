@@ -1,5 +1,12 @@
 <script lang="ts">
-  import { svc } from '../store';
+  import type { ExtensionContext, INetworkService } from 'asyar-sdk/view';
+
+  interface Props {
+    context: ExtensionContext;
+  }
+  let { context }: Props = $props();
+
+  const network = $derived(context.getService<INetworkService>('network'));
 
   let loading = $state(false);
   let output = $state('');
@@ -11,7 +18,7 @@
   async function fetchGet() {
     loading = true;
     try {
-      const res = await svc.network.fetch(url, { method: 'GET' });
+      const res = await network.fetch(url, { method: 'GET' });
       const body = typeof res.body === 'string' && res.body.length > 400
         ? res.body.slice(0, 400) + '…'
         : res.body;

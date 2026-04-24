@@ -1,5 +1,12 @@
 <script lang="ts">
-  import { svc } from '../store';
+  import type { ExtensionContext, ISelectionService } from 'asyar-sdk/view';
+
+  interface Props {
+    context: ExtensionContext;
+  }
+  let { context }: Props = $props();
+
+  const selection = $derived(context.getService<ISelectionService>('selection'));
 
   let loading = $state(false);
   let output = $state('');
@@ -10,7 +17,7 @@
   async function readText() {
     loading = true;
     try {
-      const result = await svc.selection.getSelectedText();
+      const result = await selection.getSelectedText();
       setOutput(result || '(nothing selected)');
     } catch (e: any) { setOutput(`Error: ${e.code ?? e.message ?? e}`, false); }
     finally { loading = false; }
@@ -19,7 +26,7 @@
   async function readItems() {
     loading = true;
     try {
-      const items = await svc.selection.getSelectedFinderItems();
+      const items = await selection.getSelectedFinderItems();
       setOutput(items.length > 0 ? items.join('\n') : '(no items selected)');
     } catch (e: any) { setOutput(`Error: ${e.code ?? e.message ?? e}`, false); }
     finally { loading = false; }
