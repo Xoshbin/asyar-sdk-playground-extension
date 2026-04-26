@@ -32,6 +32,15 @@ export const STATE_KEYS = {
 
   // greet's last output (§4.2 resolution: worker → notification; view mirrors).
   greetLast: 'greet.last',
+
+  // FileSystemWatcher demo — worker owns the watch handle; view reads
+  // event count / last payload via state subscription. Worker boot
+  // re-starts from `fsWatchActive` so a launcher relaunch resumes the
+  // user's last watch without view interaction.
+  fsWatchActive: 'fsWatch.active',
+  fsWatchEventCount: 'fsWatch.eventCount',
+  fsWatchLastEvent: 'fsWatch.lastEvent',
+  logsFsWatch: 'logs.fsWatch',
 } as const;
 
 export type StateKey = (typeof STATE_KEYS)[keyof typeof STATE_KEYS];
@@ -44,6 +53,7 @@ export const LOG_CAPS = {
   [STATE_KEYS.logsNotifActions]: 25,
   [STATE_KEYS.logsTimerFires]: 25,
   [STATE_KEYS.logsStatusBarClicks]: 25,
+  [STATE_KEYS.logsFsWatch]: 25,
 } as const;
 
 // Shared wire types — the view MUST be able to import these without pulling
@@ -116,6 +126,16 @@ export interface GreetLast {
   at: number;
   greeting: string;
   args: Record<string, unknown>;
+}
+
+export interface FsWatchActiveState {
+  path: string;
+  startedAt: number;
+}
+
+export interface FsWatchEventLogEntry {
+  at: number;
+  paths: string[];
 }
 
 export type CounterMap<K extends string> = Record<

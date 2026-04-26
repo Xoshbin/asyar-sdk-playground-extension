@@ -20,6 +20,7 @@
     "shell:spawn",
     "fs:read",
     "fs:write",
+    "fs:watch",
     "extension:invoke",
     "cache:read",
     "cache:write",
@@ -31,6 +32,11 @@
     "timers:cancel",
     "timers:list"
   ],
+  "permissionArgs": {
+    "fs:watch": [
+      "/tmp/asyar-fs-watch/**"
+    ]
+  },
   "preferences": [
     {
       "name": "displayName",

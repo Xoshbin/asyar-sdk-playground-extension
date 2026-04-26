@@ -24,6 +24,7 @@ import type {
   CommandExecuteArgs,
   IApplicationService,
   ICommandService,
+  IFileSystemWatcherService,
   ILogService,
   INotificationService,
   IStatusBarService,
@@ -46,6 +47,7 @@ import { appendBounded } from './lib/logBuffer';
 import { parseGreetArgs, buildGreeting } from './lib/greet';
 import { createSystemEventsController } from './worker/subscriptions/systemEvents';
 import { createApplicationPushController } from './worker/subscriptions/application';
+import { createFsWatchController } from './worker/subscriptions/fsWatch';
 import { createStatusBarController } from './worker/tray/trayController';
 
 const extensionId =
@@ -64,6 +66,7 @@ const notifier = workerContext.getService<INotificationService>('notifications')
 const applicationService = workerContext.getService<IApplicationService>('application');
 const systemEventsService = workerContext.getService<ISystemEventsService>('systemEvents');
 const statusBarService = workerContext.getService<IStatusBarService>('statusBar');
+const fsWatcherService = workerContext.getService<IFileSystemWatcherService>('fsWatcher');
 const stateProxy = workerContext.getService<ExtensionStateProxy>('state');
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -79,6 +82,10 @@ const applicationPushController = createApplicationPushController({
 });
 const trayController = createStatusBarController({
   statusBar: statusBarService,
+  state: stateProxy,
+});
+const fsWatchController = createFsWatchController({
+  service: fsWatcherService,
   state: stateProxy,
 });
 
@@ -214,12 +221,18 @@ class SDKPlaygroundWorkerExtension implements Extension {
 
     // Re-register tray items that were active before this launch.
     await trayController.bootFromState();
+
+    // Resume any prior fs.watch session so a launcher relaunch doesn't drop
+    // the user's active watch — the view never gets a chance to flip the
+    // toggle back on if it's Dormant or unmounted at boot.
+    await fsWatchController.bootFromState();
   }
 
   async deactivate(): Promise<void> {
     systemEventsController.shutdown();
     applicationPushController.shutdown();
     await trayController.shutdown();
+    await fsWatchController.shutdown();
     log.info(`[${extensionId}] worker deactivated`);
   }
 
@@ -399,6 +412,44 @@ workerContext.onRequest<Record<string, never>, { ok: true }>(
 workerContext.onRequest<Record<string, never>, { ok: false; error: string }>(
   'statusBar.tryInvalid',
   async () => ({ ok: false, error: await trayController.tryInvalid() }),
+);
+
+// ───────────────────────────────────────────────────────────────────────────
+// FileSystemWatcher RPCs — view drives start/stop/reset, worker holds the
+// handle so events keep arriving while the view is Dormant.
+// ───────────────────────────────────────────────────────────────────────────
+workerContext.onRequest<{ path?: string }, { ok: boolean; error?: string }>(
+  'fsWatch.start',
+  async (payload) => {
+    const path = payload?.path?.trim();
+    if (!path) {
+      return { ok: false, error: 'path is required' };
+    }
+    try {
+      await fsWatchController.startWatching(path);
+      return { ok: true };
+    } catch (err: unknown) {
+      return { ok: false, error: err instanceof Error ? err.message : String(err) };
+    }
+  },
+);
+
+workerContext.onRequest<Record<string, never>, { ok: true }>(
+  'fsWatch.stop',
+  async () => {
+    await fsWatchController.stopWatching();
+    return { ok: true };
+  },
+);
+
+workerContext.onRequest<Record<string, never>, { ok: true }>(
+  'fsWatch.reset',
+  async () => {
+    await stateProxy.set(STATE_KEYS.fsWatchEventCount, 0);
+    await stateProxy.set(STATE_KEYS.fsWatchLastEvent, null);
+    await stateProxy.set(STATE_KEYS.logsFsWatch, []);
+    return { ok: true };
+  },
 );
 
 // ───────────────────────────────────────────────────────────────────────────

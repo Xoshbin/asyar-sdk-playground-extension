@@ -26,6 +26,7 @@
   import SystemEventsSection from '../sections/SystemEventsSection.svelte';
   import StatusBarSection from '../sections/StatusBarSection.svelte';
   import TimersSection from '../sections/TimersSection.svelte';
+  import FileSystemWatcherSection from '../sections/FileSystemWatcherSection.svelte';
 
   interface Props {
     context: ExtensionContext;
@@ -55,6 +56,7 @@
     { id: 'sysevents',   label: 'System Events', icon: '📡' },
     { id: 'statusbar',   label: 'Status Bar',  icon: '🧭' },
     { id: 'timers',      label: 'Timers',      icon: '⏰' },
+    { id: 'fswatch',     label: 'FS Watch',    icon: '👁️' },
   ];
 
   // ───────────────────────────────────────────────────────────────────────
@@ -144,6 +146,8 @@
       <StatusBarSection {context} />
     {:else if activeTab === 'timers'}
       <TimersSection {context} />
+    {:else if activeTab === 'fswatch'}
+      <FileSystemWatcherSection {context} />
     {/if}
   </div>
 </div>
