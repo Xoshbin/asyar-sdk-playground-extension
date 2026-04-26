@@ -7,9 +7,9 @@ import { resolve } from 'path';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 // Same per-subpath SDK alias pattern Coffee/Pomodoro use. The bare `asyar-sdk`
-// specifier has no "." entry in the SDK exports map (post-Phase 4); only
-// `/contracts`, `/worker`, `/view` are valid. In dev redirect to workspace
-// source; in CI / published mode fall back to node_modules.
+// specifier has no "." entry in the SDK exports map; only `/contracts`,
+// `/worker`, `/view` are valid. In dev redirect to workspace source; in CI /
+// published mode fall back to node_modules.
 const sdkSrcDir = resolve(__dirname, '../../asyar-sdk/src');
 const sdkSubpaths = ['contracts', 'worker', 'view'] as const;
 const useLocalSdk = sdkSubpaths.every((sub) =>

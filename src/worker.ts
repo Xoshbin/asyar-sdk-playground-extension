@@ -132,7 +132,7 @@ async function recordTick(
 // ───────────────────────────────────────────────────────────────────────────
 // Notification-action dispatcher — notif-extend / notif-stop commandIds.
 // Fires when the user clicks an action button on an OS notification; the
-// handler must survive view Dormant (that's the whole point of 6.C → 6.E).
+// handler must survive view Dormant, which is why it lives in the worker.
 // ───────────────────────────────────────────────────────────────────────────
 async function recordNotifAction(
   commandId: string,
