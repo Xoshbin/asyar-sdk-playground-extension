@@ -3,7 +3,7 @@
   import type {
     ExtensionContext,
     ExtensionStateProxy,
-    IFeedbackService,
+    IDiagnosticsService,
   } from 'asyar-sdk/view';
   import { STATE_KEYS, type TickEvent } from '../stateKeys';
   import { formatTime } from '../lib/timeFormat';
@@ -17,7 +17,7 @@
   let log = $state<HTMLElement | null>(null);
 
   const stateProxy = $derived(context.getService<ExtensionStateProxy>('state'));
-  const feedback = $derived(context.getService<IFeedbackService>('feedback'));
+  const diagnostics = $derived(context.getService<IDiagnosticsService>('diagnostics'));
 
   onMount(() => {
     let active = true;
@@ -66,10 +66,11 @@
 
   async function simulateAndToast() {
     await context.request('simulateScheduledTick', { commandId: 'tick-test' });
-    await feedback.showToast({
-      title: 'Tick recorded',
-      message: 'Manual tick added to log (scheduledTick: false)',
-      style: 'success',
+    await diagnostics.report({
+      kind: 'manual',
+      severity: 'success',
+      retryable: false,
+      context: { message: 'Tick recorded — Manual tick added to log (scheduledTick: false)' },
     });
   }
 </script>

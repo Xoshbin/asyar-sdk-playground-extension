@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ExtensionContext, IFeedbackService } from 'asyar-sdk/view';
+  import type { ExtensionContext, IFeedbackService, IDiagnosticsService } from 'asyar-sdk/view';
 
   interface Props {
     context: ExtensionContext;
@@ -7,6 +7,7 @@
   let { context }: Props = $props();
 
   const feedback = $derived(context.getService<IFeedbackService>('feedback'));
+  const diagnostics = $derived(context.getService<IDiagnosticsService>('diagnostics'));
 
   let loading = $state(false);
   let output = $state('');
@@ -20,8 +21,14 @@
       const id = await feedback.showToast({ title: 'Saving…', style: 'animated' });
       setOutput(`Toast shown (id: ${id})\nWaiting 1.5 s…`);
       await new Promise(r => setTimeout(r, 1500));
-      await feedback.updateToast(id, { title: 'Done!', message: 'Playground synced.', style: 'success' });
-      setOutput(`Toast updated → success (id: ${id})`);
+      await feedback.hideToast(id);
+      await diagnostics.report({
+        kind: 'manual',
+        severity: 'success',
+        retryable: false,
+        context: { message: 'Done! — Playground synced.' },
+      });
+      setOutput(`Diagnostic reported → success`);
     } catch (e: any) { setOutput(`Error: ${e.message ?? e}`, false); }
     finally { loading = false; }
   }
