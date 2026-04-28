@@ -27,6 +27,7 @@
   import StatusBarSection from '../sections/StatusBarSection.svelte';
   import TimersSection from '../sections/TimersSection.svelte';
   import FileSystemWatcherSection from '../sections/FileSystemWatcherSection.svelte';
+  import DiagnosticsSection from '../sections/DiagnosticsSection.svelte';
 
   interface Props {
     context: ExtensionContext;
@@ -57,6 +58,7 @@
     { id: 'statusbar',   label: 'Status Bar',  icon: '🧭' },
     { id: 'timers',      label: 'Timers',      icon: '⏰' },
     { id: 'fswatch',     label: 'FS Watch',    icon: '👁️' },
+    { id: 'diagnostics', label: 'Diagnostics', icon: '🩺' },
   ];
 
   // ───────────────────────────────────────────────────────────────────────
@@ -148,6 +150,8 @@
       <TimersSection {context} />
     {:else if activeTab === 'fswatch'}
       <FileSystemWatcherSection {context} />
+    {:else if activeTab === 'diagnostics'}
+      <DiagnosticsSection {context} />
     {/if}
   </div>
 </div>

@@ -30,7 +30,8 @@
     "systemEvents:read",
     "timers:schedule",
     "timers:cancel",
-    "timers:list"
+    "timers:list",
+    "diagnostics:report"
   ],
   "permissionArgs": {
     "fs:watch": [
