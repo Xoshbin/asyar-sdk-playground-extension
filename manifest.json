@@ -7,7 +7,7 @@
   "author": "Developer",
   "searchable": false,
   "icon": "🧪",
-  "asyarSdk": "^2.3.0",
+  "asyarSdk": "^2.4.0",
   "permissions": [
     "selection:read",
     "clipboard:read",
