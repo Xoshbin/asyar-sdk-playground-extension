@@ -110,6 +110,9 @@
       "category": "SDK Playground"
     }
   ],
+  "onboarding": {
+    "command": "setup-onboarding"
+  },
   "commands": [
     {
       "id": "open",
@@ -127,6 +130,14 @@
       ],
       "mode": "view",
       "component": "DefaultView"
+    },
+    {
+      "id": "setup-onboarding",
+      "name": "SDK Playground Onboarding",
+      "description": "First-use onboarding view — shown automatically the first time the user runs any command from this extension",
+      "icon": "👋",
+      "mode": "view",
+      "component": "OnboardingView"
     },
     {
       "id": "tick-test",

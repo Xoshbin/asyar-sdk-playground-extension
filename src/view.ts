@@ -25,6 +25,7 @@ import {
 } from 'asyar-sdk/view';
 import manifest from '../manifest.json';
 import DefaultView from './views/DefaultView.svelte';
+import OnboardingView from './views/OnboardingView.svelte';
 
 class SDKPlaygroundViewExtension implements Extension {
   private extensionManager?: IExtensionManager;
@@ -40,6 +41,10 @@ class SDKPlaygroundViewExtension implements Extension {
     if (commandId === 'open') {
       this.extensionManager?.navigateToView('org.asyar.sdk-playground/DefaultView');
       return { type: 'view', viewPath: 'org.asyar.sdk-playground/DefaultView' };
+    }
+    if (commandId === 'setup-onboarding') {
+      this.extensionManager?.navigateToView('org.asyar.sdk-playground/OnboardingView');
+      return { type: 'view', viewPath: 'org.asyar.sdk-playground/OnboardingView' };
     }
     return undefined;
   }
@@ -95,6 +100,11 @@ const viewName = new URLSearchParams(window.location.search).get('view');
 const target = document.getElementById('app');
 if (viewName === 'DefaultView' && target) {
   mount(DefaultView, {
+    target,
+    props: { context },
+  });
+} else if (viewName === 'OnboardingView' && target) {
+  mount(OnboardingView, {
     target,
     props: { context },
   });
