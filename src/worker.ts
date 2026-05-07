@@ -37,6 +37,8 @@ import {
   STATE_KEYS,
   LOG_CAPS,
   type ApplicationPushKind,
+  type DynamicCommandsLogEntry,
+  type DynamicRegisteredEntry,
   type GreetLast,
   type NotifActionLogEntry,
   type SystemEventKind,
@@ -226,6 +228,19 @@ class SDKPlaygroundWorkerExtension implements Extension {
     // the user's active watch — the view never gets a chance to flip the
     // toggle back on if it's Dormant or unmounted at boot.
     await fsWatchController.bootFromState();
+
+    // Register dynamic commands — fires from worker activate so they
+    // appear in root search the moment the extension is enabled, and
+    // survive view eviction.
+    try {
+      await commandsService.replaceDynamicCommands(DYNAMIC_REGISTRATIONS);
+      await publishDynamicRegisteredState();
+      log.info(
+        `[${extensionId}] registered ${DYNAMIC_REGISTRATIONS.length} dynamic commands`,
+      );
+    } catch (err: unknown) {
+      log.warn(`replaceDynamicCommands failed: ${describe(err)}`);
+    }
   }
 
   async deactivate(): Promise<void> {
@@ -233,6 +248,14 @@ class SDKPlaygroundWorkerExtension implements Extension {
     applicationPushController.shutdown();
     await trayController.shutdown();
     await fsWatchController.shutdown();
+    // Drop dynamic registrations on deactivate so a disabled extension
+    // doesn't leave stale items in root search. Re-enable will re-register.
+    try {
+      await commandsService.replaceDynamicCommands([]);
+      await stateProxy.set(STATE_KEYS.dynamicRegistered, []);
+    } catch (err: unknown) {
+      log.warn(`replaceDynamicCommands([]) on deactivate failed: ${describe(err)}`);
+    }
     log.info(`[${extensionId}] worker deactivated`);
   }
 
@@ -262,11 +285,72 @@ class SDKPlaygroundWorkerExtension implements Extension {
         return;
 
       default:
+        if (DYNAMIC_IDS.has(commandId)) {
+          await recordDynamicExecute(commandId, rawArgs);
+          return;
+        }
         return undefined;
     }
   }
 
   onUnload = (): void => {};
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// Dynamic commands smoke test — registers three runtime commands and
+// tracks each execution. Demonstrates the full round trip: launcher
+// surfaces them in root search; Tab on a selection promotes into
+// argument mode (when the registration declares args); the worker's
+// `executeCommand` receives the dynamic id back.
+// ───────────────────────────────────────────────────────────────────────────
+const DYNAMIC_REGISTRATIONS = [
+  {
+    id: 'sc-lights',
+    name: 'Set Lights',
+    description: 'Smoke test: dynamic command with one optional text arg',
+    arguments: [{ name: 'value', type: 'text' as const, placeholder: 'e.g. 85' }],
+  },
+  {
+    id: 'sc-weather',
+    name: 'Check Weather',
+    description: 'Smoke test: dynamic command with one optional text arg',
+    arguments: [{ name: 'city', type: 'text' as const, placeholder: 'e.g. Berlin' }],
+  },
+  {
+    id: 'sc-noop',
+    name: 'Run Quick Action',
+    description: 'Smoke test: dynamic command with no arguments',
+  },
+];
+
+const DYNAMIC_IDS = new Set(DYNAMIC_REGISTRATIONS.map((r) => r.id));
+
+async function publishDynamicRegisteredState(): Promise<void> {
+  const summary: DynamicRegisteredEntry[] = DYNAMIC_REGISTRATIONS.map((r) => ({
+    id: r.id,
+    name: r.name,
+    description: r.description,
+  }));
+  await stateProxy.set(STATE_KEYS.dynamicRegistered, summary);
+}
+
+async function recordDynamicExecute(
+  commandId: string,
+  rawArgs: Record<string, unknown>,
+): Promise<void> {
+  const userArgs = ((rawArgs as { arguments?: Record<string, unknown> }).arguments as
+    | Record<string, unknown>
+    | undefined) ?? {};
+  const entry: DynamicCommandsLogEntry = {
+    at: Date.now(),
+    commandId,
+    args: userArgs,
+  };
+  await appendToLog(
+    STATE_KEYS.logsDynamicCommands,
+    entry,
+    LOG_CAPS[STATE_KEYS.logsDynamicCommands],
+  );
 }
 
 // ───────────────────────────────────────────────────────────────────────────

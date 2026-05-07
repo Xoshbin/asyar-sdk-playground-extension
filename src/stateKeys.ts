@@ -41,6 +41,12 @@ export const STATE_KEYS = {
   fsWatchEventCount: 'fsWatch.eventCount',
   fsWatchLastEvent: 'fsWatch.lastEvent',
   logsFsWatch: 'logs.fsWatch',
+
+  // Dynamic commands smoke test — worker registers 3 fake items on
+  // activation; view can mirror the registered list and the log of
+  // executions to confirm the round trip.
+  dynamicRegistered: 'dynamicCommands.registered',
+  logsDynamicCommands: 'logs.dynamicCommands',
 } as const;
 
 export type StateKey = (typeof STATE_KEYS)[keyof typeof STATE_KEYS];
@@ -54,6 +60,7 @@ export const LOG_CAPS = {
   [STATE_KEYS.logsTimerFires]: 25,
   [STATE_KEYS.logsStatusBarClicks]: 25,
   [STATE_KEYS.logsFsWatch]: 25,
+  [STATE_KEYS.logsDynamicCommands]: 25,
 } as const;
 
 // Shared wire types — the view MUST be able to import these without pulling
@@ -136,6 +143,25 @@ export interface FsWatchActiveState {
 export interface FsWatchEventLogEntry {
   at: number;
   paths: string[];
+}
+
+/**
+ * One row in the dynamic-commands smoke test registry — mirrors the
+ * `DynamicCommandRegistration` minus arguments (the view doesn't need
+ * the full schema for display).
+ */
+export interface DynamicRegisteredEntry {
+  id: string;
+  name: string;
+  description?: string;
+}
+
+export interface DynamicCommandsLogEntry {
+  at: number;
+  /** The dynamic id the launcher dispatched. */
+  commandId: string;
+  /** Argument values the user submitted, if any. */
+  args: Record<string, unknown>;
 }
 
 export type CounterMap<K extends string> = Record<
