@@ -31,7 +31,8 @@
     "timers:schedule",
     "timers:cancel",
     "timers:list",
-    "diagnostics:report"
+    "diagnostics:report",
+    "tools:register"
   ],
   "permissionArgs": {
     "fs:watch": [
@@ -234,5 +235,22 @@
   ],
   "background": {
     "main": "dist/worker.js"
-  }
+  },
+  "tools": [
+    {
+      "id": "playground_text_stats",
+      "name": "Text statistics",
+      "description": "Compute statistics for a piece of text — character count, word count, and the longest word. Use this when the user asks about the size or shape of some text.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "The text to analyse."
+          }
+        },
+        "required": ["text"]
+      }
+    }
+  ]
 }

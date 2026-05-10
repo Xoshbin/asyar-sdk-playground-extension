@@ -29,6 +29,7 @@ import type {
   INotificationService,
   IStatusBarService,
   ISystemEventsService,
+  IToolsService,
   ExtensionStateProxy,
 } from 'asyar-sdk/contracts';
 
@@ -70,6 +71,7 @@ const systemEventsService = workerContext.getService<ISystemEventsService>('syst
 const statusBarService = workerContext.getService<IStatusBarService>('statusBar');
 const fsWatcherService = workerContext.getService<IFileSystemWatcherService>('fsWatcher');
 const stateProxy = workerContext.getService<ExtensionStateProxy>('state');
+const toolsService = workerContext.getService<IToolsService>('tools');
 
 // ───────────────────────────────────────────────────────────────────────────
 // Push subscription controllers — worker-owned so they survive view Dormant.
@@ -241,6 +243,19 @@ class SDKPlaygroundWorkerExtension implements Extension {
     } catch (err: unknown) {
       log.warn(`replaceDynamicCommands failed: ${describe(err)}`);
     }
+
+    // Agent tool — registers the `playground_text_stats` tool from the
+    // manifest with a runtime handler. AI agents that include this
+    // extension's tools in their tool set will see it and can call it.
+    try {
+      const toolDecl = manifest.tools?.[0];
+      if (toolDecl) {
+        await toolsService.registerTool(toolDecl, handleTextStatsTool);
+        log.info(`[${extensionId}] registered agent tool: ${toolDecl.id}`);
+      }
+    } catch (err: unknown) {
+      log.warn(`registerTool failed: ${describe(err)}`);
+    }
   }
 
   async deactivate(): Promise<void> {
@@ -255,6 +270,16 @@ class SDKPlaygroundWorkerExtension implements Extension {
       await stateProxy.set(STATE_KEYS.dynamicRegistered, []);
     } catch (err: unknown) {
       log.warn(`replaceDynamicCommands([]) on deactivate failed: ${describe(err)}`);
+    }
+    // Drop the agent tool registration on deactivate so a disabled
+    // extension's tools don't appear in agent tool listings.
+    const toolDecl = manifest.tools?.[0];
+    if (toolDecl) {
+      try {
+        await toolsService.unregisterTool(toolDecl.id);
+      } catch (err: unknown) {
+        log.warn(`unregisterTool failed: ${describe(err)}`);
+      }
     }
     log.info(`[${extensionId}] worker deactivated`);
   }
@@ -351,6 +376,46 @@ async function recordDynamicExecute(
     entry,
     LOG_CAPS[STATE_KEYS.logsDynamicCommands],
   );
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// Agent tool handler — `playground_text_stats`.
+//
+// Called by the agent runtime when the AI decides to invoke this tool. The
+// `args` shape follows the JSON Schema declared in manifest.json, so for
+// `playground_text_stats` it will be `{ text: string }`. The return value is
+// serialised back to the AI as the tool result; keep it simple JSON.
+//
+// TODO(you): implement the body. Suggested behaviour: parse `args.text`,
+// compute character count, word count, and the longest word, then return
+// them as `{ characters, words, longestWord }`. Feel free to compute
+// different stats — the AI can interpret whatever you return.
+// ───────────────────────────────────────────────────────────────────────────
+async function handleTextStatsTool(args: unknown): Promise<unknown> {
+  const text =
+    typeof (args as { text?: unknown })?.text === 'string'
+      ? ((args as { text: string }).text)
+      : '';
+
+  if (text.length === 0) {
+    return { characters: 0, words: 0, longestWord: null };
+  }
+
+  // Word-boundary regex handles punctuation correctly
+  // ("don't" → "don" + "t" with `\b\w+\b`; close enough for a demo).
+  const words = text.match(/\b\w+\b/g) ?? [];
+  const longestWord = words.reduce(
+    (longest, w) => (w.length > longest.length ? w : longest),
+    '',
+  );
+
+  return {
+    // [...text].length is grapheme-aware (counts emojis as 1 each instead
+    // of 2 UTF-16 code units), closer to what humans mean by "characters".
+    characters: [...text].length,
+    words: words.length,
+    longestWord: longestWord || null,
+  };
 }
 
 // ───────────────────────────────────────────────────────────────────────────
