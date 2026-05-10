@@ -47,7 +47,18 @@ export const STATE_KEYS = {
   // executions to confirm the round trip.
   dynamicRegistered: 'dynamicCommands.registered',
   logsDynamicCommands: 'logs.dynamicCommands',
+
+  // Agent tool — persistent notes saved by AI agents via the
+  // `playground_save_note` tool. Survives launcher restarts because
+  // ExtensionStateProxy is SQLite-backed, scoped to this extension id.
+  agentNotes: 'agent.notes',
 } as const;
+
+export interface AgentNote {
+  id: string;
+  note: string;
+  at: number;
+}
 
 export type StateKey = (typeof STATE_KEYS)[keyof typeof STATE_KEYS];
 

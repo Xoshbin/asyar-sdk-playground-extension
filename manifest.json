@@ -251,6 +251,30 @@
         },
         "required": ["text"]
       }
+    },
+    {
+      "id": "playground_save_note",
+      "name": "Save a note",
+      "description": "Save a short note to the user's persistent note store. Notes survive launcher restarts and are scoped to this extension. Use this whenever the user asks you to remember something.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "description": "The note text to save."
+          }
+        },
+        "required": ["note"]
+      }
+    },
+    {
+      "id": "playground_list_notes",
+      "name": "List saved notes",
+      "description": "List every note the user has previously saved via playground_save_note. Use this whenever the user asks what they have saved, what you remember, or when you need to recall facts about them. Returns an array of {id, note, at} entries sorted oldest first.",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
     }
   ]
 }

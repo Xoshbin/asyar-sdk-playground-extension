@@ -37,6 +37,7 @@ import manifest from '../manifest.json';
 import {
   STATE_KEYS,
   LOG_CAPS,
+  type AgentNote,
   type ApplicationPushKind,
   type DynamicCommandsLogEntry,
   type DynamicRegisteredEntry,
@@ -244,17 +245,21 @@ class SDKPlaygroundWorkerExtension implements Extension {
       log.warn(`replaceDynamicCommands failed: ${describe(err)}`);
     }
 
-    // Agent tool — registers the `playground_text_stats` tool from the
-    // manifest with a runtime handler. AI agents that include this
-    // extension's tools in their tool set will see it and can call it.
-    try {
-      const toolDecl = manifest.tools?.[0];
-      if (toolDecl) {
-        await toolsService.registerTool(toolDecl, handleTextStatsTool);
-        log.info(`[${extensionId}] registered agent tool: ${toolDecl.id}`);
+    // Agent tools — register every tool declared in manifest.json with a
+    // matching handler. AI agents that include this extension's tools in
+    // their tool set will see them and can call them.
+    for (const toolDecl of manifest.tools ?? []) {
+      const handler = AGENT_TOOL_HANDLERS[toolDecl.id];
+      if (!handler) {
+        log.warn(`no handler for tool '${toolDecl.id}' — skipping registration`);
+        continue;
       }
-    } catch (err: unknown) {
-      log.warn(`registerTool failed: ${describe(err)}`);
+      try {
+        await toolsService.registerTool(toolDecl, handler);
+        log.info(`[${extensionId}] registered agent tool: ${toolDecl.id}`);
+      } catch (err: unknown) {
+        log.warn(`registerTool(${toolDecl.id}) failed: ${describe(err)}`);
+      }
     }
   }
 
@@ -271,14 +276,13 @@ class SDKPlaygroundWorkerExtension implements Extension {
     } catch (err: unknown) {
       log.warn(`replaceDynamicCommands([]) on deactivate failed: ${describe(err)}`);
     }
-    // Drop the agent tool registration on deactivate so a disabled
+    // Drop every agent tool registration on deactivate so a disabled
     // extension's tools don't appear in agent tool listings.
-    const toolDecl = manifest.tools?.[0];
-    if (toolDecl) {
+    for (const toolDecl of manifest.tools ?? []) {
       try {
         await toolsService.unregisterTool(toolDecl.id);
       } catch (err: unknown) {
-        log.warn(`unregisterTool failed: ${describe(err)}`);
+        log.warn(`unregisterTool(${toolDecl.id}) failed: ${describe(err)}`);
       }
     }
     log.info(`[${extensionId}] worker deactivated`);
@@ -417,6 +421,46 @@ async function handleTextStatsTool(args: unknown): Promise<unknown> {
     longestWord: longestWord || null,
   };
 }
+
+// ───────────────────────────────────────────────────────────────────────────
+// Agent tool handler — `playground_save_note` and `playground_list_notes`.
+//
+// Demonstrates a tool composing with another SDK service. The handler
+// reads/writes via stateProxy, which is SQLite-backed and scoped per
+// extension — so notes survive launcher restarts and don't collide with
+// other extensions' state. This is the foundation for AI cross-session
+// memory: the agent saves a fact in one conversation, lists it in another.
+// ───────────────────────────────────────────────────────────────────────────
+async function handleSaveNoteTool(args: unknown): Promise<unknown> {
+  const note =
+    typeof (args as { note?: unknown })?.note === 'string'
+      ? ((args as { note: string }).note).trim()
+      : '';
+
+  if (!note) {
+    return { saved: false, error: 'note must be a non-empty string' };
+  }
+
+  const entry: AgentNote = { id: crypto.randomUUID(), note, at: Date.now() };
+  const existing = ((await stateProxy.get(STATE_KEYS.agentNotes)) as AgentNote[] | null) ?? [];
+  await stateProxy.set(STATE_KEYS.agentNotes, [...existing, entry]);
+
+  return { saved: true, id: entry.id, total: existing.length + 1 };
+}
+
+async function handleListNotesTool(_args: unknown): Promise<unknown> {
+  const notes = ((await stateProxy.get(STATE_KEYS.agentNotes)) as AgentNote[] | null) ?? [];
+  return { count: notes.length, notes };
+}
+
+// Map of tool id → handler. Drives both register (in activate) and
+// unregister (in deactivate). New tools: add a manifest entry, write a
+// handler above, and add the row here.
+const AGENT_TOOL_HANDLERS: Record<string, (args: unknown) => Promise<unknown>> = {
+  playground_text_stats: handleTextStatsTool,
+  playground_save_note: handleSaveNoteTool,
+  playground_list_notes: handleListNotesTool,
+};
 
 // ───────────────────────────────────────────────────────────────────────────
 // greet dispatcher — §4.2 resolution: use notification.send, not feedback.
