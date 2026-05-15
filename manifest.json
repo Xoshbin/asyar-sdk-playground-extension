@@ -7,7 +7,7 @@
   "author": "Developer",
   "searchable": false,
   "icon": "🧪",
-  "asyarSdk": "^2.5.0",
+  "asyarSdk": "^2.6.0",
   "permissions": [
     "selection:read",
     "clipboard:read",
@@ -249,7 +249,9 @@
             "description": "The text to analyse."
           }
         },
-        "required": ["text"]
+        "required": [
+          "text"
+        ]
       }
     },
     {
@@ -264,7 +266,9 @@
             "description": "The note text to save."
           }
         },
-        "required": ["note"]
+        "required": [
+          "note"
+        ]
       }
     },
     {
