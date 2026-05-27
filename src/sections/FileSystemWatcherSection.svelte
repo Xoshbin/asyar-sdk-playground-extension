@@ -226,18 +226,18 @@
   .path-row {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    margin-bottom: 8px;
+    gap: var(--space-1);
+    margin-bottom: var(--space-3);
   }
 
   .path-label {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: var(--space-4);
   }
 
   .path-label-text {
-    font-size: 11px;
+    font-size: var(--font-size-xs);
     font-weight: 700;
     letter-spacing: 0.04em;
     color: var(--text-secondary);
@@ -249,10 +249,10 @@
     background: var(--bg-secondary);
     color: var(--text-primary);
     border: 1px solid var(--separator);
-    border-radius: 6px;
-    padding: 6px 10px;
-    font-family: 'SF Mono', 'Fira Mono', monospace;
-    font-size: 12px;
+    border-radius: var(--radius-sm);
+    padding: var(--space-2) var(--space-4);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
   }
 
   .path-input:disabled {
@@ -261,7 +261,7 @@
   }
 
   .path-hint {
-    font-size: 10px;
+    font-size: var(--font-size-2xs);
     color: var(--text-secondary);
     opacity: 0.7;
     padding-left: 90px;
@@ -270,20 +270,20 @@
   .status-rows {
     list-style: none;
     padding: 0;
-    margin: 8px 0;
+    margin: var(--space-3) 0;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--space-1);
   }
 
   .status-row {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--space-5);
     background: var(--bg-secondary);
     border: 1px solid var(--separator);
-    border-radius: 7px;
-    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    padding: var(--space-3) var(--space-5);
   }
 
   .status-row.active {
@@ -292,7 +292,7 @@
   }
 
   .status-label {
-    font-size: 11px;
+    font-size: var(--font-size-xs);
     font-weight: 700;
     letter-spacing: 0.04em;
     color: var(--text-secondary);
@@ -300,7 +300,7 @@
   }
 
   .status-value {
-    font-size: 12px;
+    font-size: var(--font-size-sm);
     color: var(--text-primary);
     flex: 1;
     overflow: hidden;
@@ -309,38 +309,38 @@
   }
 
   .mono {
-    font-family: 'SF Mono', 'Fira Mono', monospace;
+    font-family: var(--font-mono);
   }
 
   .error-box {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    background: color-mix(in srgb, #ff6b6b 12%, var(--bg-secondary));
-    border: 1px solid color-mix(in srgb, #ff6b6b 35%, var(--separator));
-    border-radius: 7px;
-    padding: 8px 12px;
-    margin-bottom: 8px;
+    gap: var(--space-1);
+    background: color-mix(in srgb, var(--accent-danger) 12%, var(--bg-secondary));
+    border: 1px solid color-mix(in srgb, var(--accent-danger) 35%, var(--separator));
+    border-radius: var(--radius-md);
+    padding: var(--space-3) var(--space-5);
+    margin-bottom: var(--space-3);
   }
 
   .error-label {
-    font-size: 10px;
+    font-size: var(--font-size-2xs);
     font-weight: 700;
     letter-spacing: 0.06em;
-    color: #ff6b6b;
+    color: var(--accent-danger);
   }
 
   .error-body {
-    font-family: 'SF Mono', 'Fira Mono', monospace;
-    font-size: 11px;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
     color: var(--text-primary);
   }
 
   code {
-    font-family: 'SF Mono', 'Fira Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.95em;
     background: var(--bg-tertiary);
-    padding: 1px 4px;
-    border-radius: 3px;
+    padding: 1px var(--space-1);
+    border-radius: var(--radius-xs);
   }
 </style>

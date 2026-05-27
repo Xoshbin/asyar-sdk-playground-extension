@@ -107,17 +107,17 @@
   .prefs-grid {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: var(--space-2);
   }
 
   .pref-row {
     display: grid;
     grid-template-columns: 180px 1fr;
-    gap: 12px;
-    padding: 8px 10px;
+    gap: var(--space-5);
+    padding: var(--space-3) var(--space-4);
     background: var(--bg-secondary);
-    border-radius: 6px;
-    font-size: 12px;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
     align-items: center;
   }
 
@@ -130,19 +130,19 @@
     color: var(--text-primary);
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-2);
   }
 
   .pref-value.mono {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-family: var(--font-mono);
   }
 
   .swatch {
     display: inline-block;
     width: 14px;
     height: 14px;
-    border-radius: 3px;
+    border-radius: var(--radius-xs);
     border: 1px solid var(--border-color);
-    background: #a855f7;
+    background: var(--accent-primary);
   }
 </style>

@@ -115,12 +115,12 @@
   .fields {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--space-3);
   }
 
   .btn-row {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 6px;
+    gap: var(--space-2);
   }
 </style>

@@ -317,11 +317,11 @@
   .fields {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: var(--space-4);
   }
 
   .field-hint {
-    font-size: 10px;
+    font-size: var(--font-size-2xs);
     color: var(--text-secondary);
     opacity: 0.55;
     margin-top: 2px;
@@ -330,7 +330,7 @@
   .active-area {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: var(--space-2);
   }
 
   .active-list {
@@ -339,35 +339,35 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--space-1);
   }
 
   .active-row {
-    padding: 8px 10px;
+    padding: var(--space-3) var(--space-4);
     background: var(--bg-secondary);
     border: 1px solid var(--separator);
     border-left: 3px solid var(--accent-primary);
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--space-1);
   }
 
   .active-row-head {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    font-size: 11px;
+    font-size: var(--font-size-xs);
   }
 
   .token {
-    font-family: 'SF Mono', 'Fira Mono', monospace;
+    font-family: var(--font-mono);
     color: var(--text-primary);
     font-weight: 600;
   }
 
   .created {
-    font-size: 10px;
+    font-size: var(--font-size-2xs);
     color: var(--text-secondary);
     opacity: 0.7;
     font-variant-numeric: tabular-nums;
@@ -376,13 +376,13 @@
   .active-row-body {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 10px;
+    gap: var(--space-2);
+    font-size: var(--font-size-2xs);
   }
 
   .pill {
-    padding: 1px 6px;
-    border-radius: 10px;
+    padding: 1px var(--space-2);
+    border-radius: var(--radius-lg);
     background: var(--bg-tertiary);
     color: var(--text-secondary);
     font-weight: 600;
@@ -402,28 +402,28 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-family: 'SF Mono', 'Fira Mono', monospace;
+    font-family: var(--font-mono);
   }
 
   .cancel-btn {
-    font-size: 10px;
-    padding: 2px 8px;
+    font-size: var(--font-size-2xs);
+    padding: 2px var(--space-3);
     background: transparent;
     border: 1px solid var(--separator);
-    border-radius: 5px;
+    border-radius: var(--radius-sm);
     color: var(--text-secondary);
     cursor: pointer;
-    transition: border-color 0.12s, color 0.12s;
+    transition: border-color var(--transition-fast), color var(--transition-fast);
   }
   .cancel-btn:hover:not(:disabled) {
-    color: #ef4444;
-    border-color: #ef4444;
+    color: var(--accent-danger);
+    border-color: var(--accent-danger);
   }
 
   .log-area {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: var(--space-2);
   }
 
   .log-header {
@@ -433,52 +433,52 @@
   }
 
   .clear-btn {
-    font-size: 10px;
-    padding: 2px 8px;
+    font-size: var(--font-size-2xs);
+    padding: 2px var(--space-3);
     background: transparent;
     border: 1px solid var(--separator);
-    border-radius: 5px;
+    border-radius: var(--radius-sm);
     color: var(--text-secondary);
     cursor: pointer;
-    transition: border-color 0.12s, color 0.12s;
+    transition: border-color var(--transition-fast), color var(--transition-fast);
   }
   .clear-btn:hover { color: var(--text-primary); border-color: var(--accent-primary); }
 
   .log-body {
     background: var(--bg-secondary);
     border: 1px solid var(--separator);
-    border-radius: 8px;
-    padding: 8px;
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--space-1);
     min-height: 80px;
     max-height: 180px;
     overflow-y: auto;
     scrollbar-width: thin;
-    scrollbar-color: var(--separator) transparent;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
   }
 
   .log-empty {
-    font-size: 10px;
+    font-size: var(--font-size-2xs);
     color: var(--text-secondary);
     opacity: 0.45;
     font-style: italic;
     line-height: 1.5;
     margin: auto;
     text-align: center;
-    padding: 8px;
+    padding: var(--space-3);
   }
 
   .tick-row {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-family: 'SF Mono', 'Fira Mono', monospace;
-    font-size: 10px;
+    gap: var(--space-2);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-2xs);
     line-height: 1.4;
-    padding: 3px 4px;
-    border-radius: 4px;
+    padding: 3px var(--space-1);
+    border-radius: var(--radius-xs);
   }
 
   .tick-time {
@@ -493,12 +493,12 @@
     font-weight: 700;
     letter-spacing: 0.05em;
     padding: 1px 5px;
-    border-radius: 3px;
+    border-radius: var(--radius-xs);
     flex-shrink: 0;
   }
   .badge-scheduled {
-    background: color-mix(in srgb, #22c55e 15%, transparent);
-    color: #22c55e;
+    background: color-mix(in srgb, var(--accent-success) 15%, transparent);
+    color: var(--accent-success);
   }
 
   .tick-args {
@@ -508,11 +508,11 @@
   }
 
   code {
-    font-family: 'SF Mono', 'Fira Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.95em;
     background: var(--bg-tertiary);
-    padding: 1px 4px;
-    border-radius: 3px;
+    padding: 1px var(--space-1);
+    border-radius: var(--radius-xs);
   }
 
   select.field-input {

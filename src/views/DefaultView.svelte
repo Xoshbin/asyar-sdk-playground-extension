@@ -161,15 +161,15 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: var(--bg-primary);
+    background: transparent;
     color: var(--text-primary);
-    font-family: inherit;
+    font-family: var(--font-ui);
   }
 
   .tabbar {
     display: flex;
     gap: 2px;
-    padding: 8px 12px 0;
+    padding: var(--space-3) var(--space-5) 0;
     border-bottom: 1px solid var(--separator);
     overflow-x: auto;
     scrollbar-width: none;
@@ -181,26 +181,31 @@
     display: flex;
     align-items: center;
     gap: 5px;
-    padding: 5px 10px 7px;
+    padding: 5px var(--space-4) 7px;
     border: none;
     background: transparent;
     color: var(--text-secondary);
-    font-size: 11px;
+    font-family: var(--font-ui);
+    font-size: var(--font-size-xs);
     font-weight: 500;
     cursor: pointer;
     border-bottom: 2px solid transparent;
     margin-bottom: -1px;
     white-space: nowrap;
-    transition: color 0.15s, border-color 0.15s;
+    transition: color var(--transition-normal), border-color var(--transition-normal);
     border-radius: 0;
   }
   .tab:hover { color: var(--text-primary); }
+  .tab:focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-focus);
+  }
   .tab.active {
     color: var(--accent-primary);
     border-bottom-color: var(--accent-primary);
   }
 
-  .tab-icon { font-size: 12px; line-height: 1; }
+  .tab-icon { font-size: var(--font-size-sm); line-height: 1; }
   .tab-label { line-height: 1; }
 
   .content {

@@ -298,22 +298,22 @@
   .demo-block {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 12px;
+    gap: var(--space-3);
+    padding: var(--space-5);
     background: var(--bg-secondary);
     border: 1px solid var(--separator);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
   }
 
   .demo-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
+    gap: var(--space-3);
   }
 
   .demo-title {
-    font-size: 11px;
+    font-size: var(--font-size-xs);
     font-weight: 700;
     color: var(--text-primary);
     letter-spacing: -0.01em;
@@ -325,7 +325,7 @@
     letter-spacing: 0.04em;
     text-transform: uppercase;
     padding: 2px 7px;
-    border-radius: 10px;
+    border-radius: var(--radius-lg);
     background: var(--bg-tertiary);
     color: var(--text-secondary);
     opacity: 0.55;
@@ -340,23 +340,23 @@
   .field-row {
     display: grid;
     grid-template-columns: 1fr 2fr;
-    gap: 8px;
+    gap: var(--space-3);
   }
 
   .state-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: var(--space-2);
   }
 
   .state-pill {
-    font-size: 10px;
-    padding: 2px 8px;
-    border-radius: 10px;
+    font-size: var(--font-size-2xs);
+    padding: 2px var(--space-3);
+    border-radius: var(--radius-lg);
     background: var(--bg-tertiary);
     color: var(--text-secondary);
     opacity: 0.5;
-    font-family: "SF Mono", "Fira Mono", monospace;
+    font-family: var(--font-mono);
   }
 
   .state-pill.on {
@@ -372,9 +372,9 @@
   }
 
   .clear-btn {
-    font-size: 10px;
-    padding: 2px 8px;
-    border-radius: 6px;
+    font-size: var(--font-size-2xs);
+    padding: 2px var(--space-3);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--separator);
     background: var(--bg-tertiary);
     color: var(--text-secondary);
@@ -394,58 +394,60 @@
     gap: 3px;
     max-height: 220px;
     overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
   }
 
   .log-row {
     display: grid;
     grid-template-columns: auto auto auto 1fr;
-    gap: 8px;
+    gap: var(--space-3);
     align-items: center;
-    padding: 5px 8px;
+    padding: 5px var(--space-3);
     background: var(--bg-secondary);
     border: 1px solid var(--separator);
     border-left: 3px solid var(--accent-primary);
-    border-radius: 6px;
-    font-size: 11px;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
   }
 
   .log-time {
-    font-family: "SF Mono", "Fira Mono", monospace;
+    font-family: var(--font-mono);
     color: var(--text-secondary);
     opacity: 0.7;
   }
 
   .log-path {
-    font-family: "SF Mono", "Fira Mono", monospace;
+    font-family: var(--font-mono);
     color: var(--text-primary);
     font-weight: 600;
   }
 
   .log-checked {
-    font-size: 10px;
-    font-family: "SF Mono", "Fira Mono", monospace;
-    padding: 1px 6px;
-    border-radius: 10px;
+    font-size: var(--font-size-2xs);
+    font-family: var(--font-mono);
+    padding: 1px var(--space-2);
+    border-radius: var(--radius-lg);
     background: var(--bg-tertiary);
     color: var(--text-secondary);
   }
 
   .log-checked.on {
-    background: color-mix(in srgb, #22c55e 20%, transparent);
-    color: #22c55e;
+    background: color-mix(in srgb, var(--accent-success) 20%, transparent);
+    color: var(--accent-success);
   }
 
   .log-note {
-    font-size: 10px;
+    font-size: var(--font-size-2xs);
     color: var(--text-secondary);
     opacity: 0.7;
   }
 
   code {
-    font-family: 'SF Mono', 'Fira Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.95em;
     background: var(--bg-tertiary);
-    padding: 1px 4px;
-    border-radius: 3px;
+    padding: 1px var(--space-1);
+    border-radius: var(--radius-xs);
   }
 </style>

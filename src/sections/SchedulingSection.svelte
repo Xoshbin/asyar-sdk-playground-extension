@@ -167,7 +167,7 @@
   .stats-row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
+    gap: var(--space-2);
   }
 
   .stat {
@@ -175,18 +175,18 @@
     flex-direction: column;
     align-items: center;
     gap: 2px;
-    padding: 10px 8px;
+    padding: var(--space-4) var(--space-3);
     background: var(--bg-secondary);
     border: 1px solid var(--separator);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
   }
 
   .stat-value {
-    font-size: 18px;
+    font-size: var(--font-size-xl);
     font-weight: 700;
     color: var(--text-primary);
     font-variant-numeric: tabular-nums;
-    font-family: "SF Mono", "Fira Mono", monospace;
+    font-family: var(--font-mono);
     letter-spacing: -0.02em;
   }
 
@@ -202,7 +202,7 @@
   .log-area {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: var(--space-2);
     flex: 1;
     min-height: 0;
   }
@@ -214,14 +214,14 @@
   }
 
   .clear-btn {
-    font-size: 10px;
-    padding: 2px 8px;
+    font-size: var(--font-size-2xs);
+    padding: 2px var(--space-3);
     background: transparent;
     border: 1px solid var(--separator);
     border-radius: 5px;
     color: var(--text-secondary);
     cursor: pointer;
-    transition: border-color 0.12s, color 0.12s;
+    transition: border-color var(--transition-fast), color var(--transition-fast);
   }
   .clear-btn:hover { color: var(--text-primary); border-color: var(--accent-primary); }
 
@@ -230,39 +230,39 @@
     overflow-y: auto;
     background: var(--bg-secondary);
     border: 1px solid var(--separator);
-    border-radius: 8px;
-    padding: 8px;
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--space-1);
     min-height: 80px;
     scrollbar-width: thin;
-    scrollbar-color: var(--separator) transparent;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
   }
 
   .log-empty {
-    font-size: 10px;
+    font-size: var(--font-size-2xs);
     color: var(--text-secondary);
     opacity: 0.45;
     font-style: italic;
     line-height: 1.5;
     margin: auto;
     text-align: center;
-    padding: 8px;
+    padding: var(--space-3);
   }
 
   .tick-row {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-family: "SF Mono", "Fira Mono", monospace;
-    font-size: 10px;
+    gap: var(--space-2);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-2xs);
     line-height: 1.4;
-    padding: 3px 4px;
-    border-radius: 4px;
-    transition: background 0.1s;
+    padding: 3px var(--space-1);
+    border-radius: var(--radius-xs);
+    transition: background var(--transition-fast);
   }
-  .tick-row.scheduled { background: color-mix(in srgb, #22c55e 6%, transparent); }
+  .tick-row.scheduled { background: color-mix(in srgb, var(--accent-success) 6%, transparent); }
 
   .tick-time {
     color: var(--text-secondary);
@@ -276,16 +276,16 @@
     font-weight: 700;
     letter-spacing: 0.05em;
     padding: 1px 5px;
-    border-radius: 3px;
+    border-radius: var(--radius-xs);
     flex-shrink: 0;
   }
   .badge-scheduled {
-    background: color-mix(in srgb, #22c55e 15%, transparent);
-    color: #22c55e;
+    background: color-mix(in srgb, var(--accent-success) 15%, transparent);
+    color: var(--accent-success);
   }
   .badge-manual {
-    background: color-mix(in srgb, #f59e0b 12%, transparent);
-    color: #f59e0b;
+    background: color-mix(in srgb, var(--accent-warning) 12%, transparent);
+    color: var(--accent-warning);
   }
 
   .tick-cmd {
@@ -293,14 +293,14 @@
     font-weight: 600;
     letter-spacing: 0.04em;
     padding: 1px 5px;
-    border-radius: 3px;
+    border-radius: var(--radius-xs);
     flex-shrink: 0;
     background: color-mix(in srgb, var(--text-secondary) 12%, transparent);
     color: var(--text-secondary);
   }
   .tick-cmd.cmd-fast {
-    background: color-mix(in srgb, #3b82f6 14%, transparent);
-    color: #3b82f6;
+    background: color-mix(in srgb, var(--accent-primary) 14%, transparent);
+    color: var(--accent-primary);
   }
 
   .tick-args {
@@ -310,7 +310,7 @@
   }
 
   .note {
-    font-size: 10px;
+    font-size: var(--font-size-2xs);
     color: var(--text-secondary);
     opacity: 0.55;
     line-height: 1.5;
@@ -318,10 +318,10 @@
   }
 
   .note code {
-    font-family: "SF Mono", "Fira Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 9.5px;
     background: var(--bg-tertiary);
-    padding: 1px 4px;
-    border-radius: 3px;
+    padding: 1px var(--space-1);
+    border-radius: var(--radius-xs);
   }
 </style>

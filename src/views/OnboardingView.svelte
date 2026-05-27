@@ -93,98 +93,114 @@
   .onboarding {
     display: flex;
     flex-direction: column;
-    gap: var(--space-5, 12px);
-    padding: var(--space-6, 16px);
-    color: var(--text-primary, currentColor);
-    font-family: var(--font-ui, system-ui, sans-serif);
+    gap: var(--space-5);
+    padding: var(--space-6);
+    color: var(--text-primary);
+    font-family: var(--font-ui);
   }
 
   header {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--space-1);
   }
   .emoji {
-    font-size: 32px;
+    font-size: var(--font-size-3xl);
   }
   h1 {
-    font-size: var(--font-size-xl, 17px);
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    color: var(--text-primary);
     margin: 0;
+    letter-spacing: -0.01em;
   }
   .lede {
-    color: var(--text-secondary, currentColor);
+    color: var(--text-secondary);
     margin: 0;
   }
 
   section h2 {
-    font-size: var(--font-size-md, 13px);
+    font-size: var(--font-size-md);
     font-weight: 600;
-    margin: 0 0 var(--space-2, 6px);
-    color: var(--text-secondary, currentColor);
+    margin: 0 0 var(--space-2);
+    color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
   }
 
   .explainer ol {
     margin: 0;
-    padding-left: var(--space-5, 18px);
+    padding-left: var(--space-7);
     display: flex;
     flex-direction: column;
-    gap: var(--space-2, 6px);
-    color: var(--text-primary, currentColor);
+    gap: var(--space-2);
+    color: var(--text-primary);
   }
   .explainer code {
-    background: var(--bg-secondary, rgba(127, 127, 127, 0.12));
-    padding: 1px 4px;
-    border-radius: var(--radius-xs, 4px);
-    font-family: var(--font-mono, ui-monospace, monospace);
+    background: var(--bg-tertiary);
+    padding: 1px var(--space-1);
+    border-radius: var(--radius-xs);
+    font-family: var(--font-mono);
     font-size: 0.9em;
+    color: var(--text-primary);
   }
 
   .action {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: var(--space-3, 8px);
+    gap: var(--space-3);
   }
   .action button {
-    background: var(--asyar-brand, #2ec4b6);
+    background: var(--accent-primary);
     color: white;
     border: none;
-    padding: var(--space-3, 8px) var(--space-5, 14px);
-    border-radius: var(--radius-md, 8px);
-    font-size: var(--font-size-md, 13px);
-    font-weight: 600;
+    padding: var(--space-3) var(--space-5);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-ui);
+    font-size: var(--font-size-md);
+    font-weight: 500;
     cursor: pointer;
+    transition: opacity var(--transition-fast);
+  }
+  .action button:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+  .action button:focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-focus);
   }
   .action button:disabled {
-    opacity: 0.6;
-    cursor: progress;
+    opacity: 0.5;
+    cursor: not-allowed;
   }
   .action .hint {
-    color: var(--text-secondary, currentColor);
-    font-size: var(--font-size-sm, 12px);
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
     margin: 0;
   }
   .action .error {
-    color: var(--accent-danger, #ff3b30);
+    color: var(--accent-danger);
     margin: 0;
-    font-size: var(--font-size-sm, 12px);
+    font-size: var(--font-size-sm);
   }
 
   .log {
-    border-top: 1px solid var(--border-color, rgba(127, 127, 127, 0.2));
-    padding-top: var(--space-3, 8px);
+    border-top: 1px solid var(--separator);
+    padding-top: var(--space-3);
   }
   .log__row {
     display: grid;
     grid-template-columns: 80px 1fr;
-    gap: var(--space-2, 6px);
-    font-size: var(--font-size-sm, 12px);
+    gap: var(--space-2);
+    font-size: var(--font-size-sm);
     padding: 2px 0;
   }
   .log__row time {
-    color: var(--text-secondary, currentColor);
-    font-family: var(--font-mono, ui-monospace, monospace);
+    color: var(--text-tertiary);
+    font-family: var(--font-mono);
+  }
+  .log__row span {
+    color: var(--text-secondary);
   }
 </style>

@@ -105,7 +105,7 @@
   .stats-row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
+    gap: var(--space-2);
   }
 
   .stat {
@@ -113,18 +113,18 @@
     flex-direction: column;
     align-items: center;
     gap: 2px;
-    padding: 10px 8px;
+    padding: var(--space-4) var(--space-3);
     background: var(--bg-secondary);
     border: 1px solid var(--separator);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
   }
 
   .stat-value {
-    font-size: 18px;
+    font-size: var(--font-size-xl);
     font-weight: 700;
     color: var(--text-primary);
     font-variant-numeric: tabular-nums;
-    font-family: "SF Mono", "Fira Mono", monospace;
+    font-family: var(--font-mono);
     letter-spacing: -0.02em;
   }
 
@@ -138,10 +138,10 @@
   }
 
   .note code {
-    font-family: "SF Mono", "Fira Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 9.5px;
     background: var(--bg-tertiary);
-    padding: 1px 4px;
-    border-radius: 3px;
+    padding: 1px var(--space-1);
+    border-radius: var(--radius-xs);
   }
 </style>

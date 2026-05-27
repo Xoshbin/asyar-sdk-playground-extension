@@ -200,14 +200,14 @@
   .fields {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--space-3);
   }
 
   .log-area {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    margin-top: 8px;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
   }
 
   .log-header {
@@ -219,9 +219,9 @@
   .link-btn {
     background: none;
     border: none;
-    color: var(--color-accent, #888);
+    color: var(--text-tertiary);
     cursor: pointer;
-    font-size: 12px;
+    font-size: var(--font-size-sm);
   }
 
   .link-btn:disabled {
@@ -235,19 +235,21 @@
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--space-1);
     max-height: 180px;
     overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
   }
 
   .log-item {
     display: grid;
     grid-template-columns: auto 1fr auto;
-    gap: 8px;
-    padding: 4px 8px;
-    border-radius: 4px;
-    background: rgba(0, 0, 0, 0.05);
-    font-size: 12px;
+    gap: var(--space-3);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-xs);
+    background: var(--bg-hover);
+    font-size: var(--font-size-sm);
   }
 
   .log-time {
@@ -256,7 +258,7 @@
   }
 
   .log-cmd {
-    font-family: var(--font-mono, monospace);
+    font-family: var(--font-mono);
     opacity: 0.75;
   }
 </style>

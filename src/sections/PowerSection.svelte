@@ -224,13 +224,13 @@
   .fields {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: var(--space-4);
   }
 
   .toggle-row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
+    gap: var(--space-2);
   }
 
   .toggle {
@@ -238,17 +238,17 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 2px;
-    padding: 8px 10px;
+    padding: var(--space-3) var(--space-4);
     background: var(--bg-tertiary);
     border: 1px solid var(--separator);
-    border-radius: 7px;
-    font-size: 11px;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-xs);
     cursor: pointer;
     user-select: none;
   }
 
   .toggle input[type='checkbox'] {
-    margin: 0 0 4px 0;
+    margin: 0 0 var(--space-1) 0;
     accent-color: var(--accent-primary);
   }
 
@@ -261,7 +261,7 @@
   .active-area {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: var(--space-2);
   }
 
   .active-list {
@@ -270,35 +270,35 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--space-1);
   }
 
   .active-row {
-    padding: 8px 10px;
+    padding: var(--space-3) var(--space-4);
     background: var(--bg-secondary);
     border: 1px solid var(--separator);
     border-left: 3px solid var(--accent-primary);
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--space-1);
   }
 
   .active-row-head {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    font-size: 11px;
+    font-size: var(--font-size-xs);
   }
 
   .token {
-    font-family: 'SF Mono', 'Fira Mono', monospace;
+    font-family: var(--font-mono);
     color: var(--text-primary);
     font-weight: 600;
   }
 
   .created {
-    font-size: 10px;
+    font-size: var(--font-size-2xs);
     color: var(--text-secondary);
     opacity: 0.7;
   }
@@ -306,13 +306,13 @@
   .active-row-body {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 10px;
+    gap: var(--space-2);
+    font-size: var(--font-size-2xs);
   }
 
   .pill {
-    padding: 1px 6px;
-    border-radius: 10px;
+    padding: 1px var(--space-2);
+    border-radius: var(--radius-lg);
     background: var(--bg-tertiary);
     color: var(--text-secondary);
     opacity: 0.4;
@@ -338,10 +338,10 @@
   }
 
   code {
-    font-family: 'SF Mono', 'Fira Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.95em;
     background: var(--bg-tertiary);
-    padding: 1px 4px;
-    border-radius: 3px;
+    padding: 1px var(--space-1);
+    border-radius: var(--radius-xs);
   }
 </style>

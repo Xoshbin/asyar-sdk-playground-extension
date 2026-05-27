@@ -144,7 +144,7 @@
   @import './section.css';
 
   .required {
-    color: #ef4444;
+    color: var(--accent-danger);
     margin-left: 2px;
   }
 </style>
