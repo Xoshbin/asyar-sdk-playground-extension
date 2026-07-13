@@ -3,8 +3,10 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
   FEEDBACK_SCENARIOS,
+  SDK_PLAYGROUND_RELEASE_URL,
   feedbackAnnouncementIdForVersion,
 } from './feedbackScenarios';
+import manifest from '../../manifest.json';
 
 function sourceFiles(root: string): string[] {
   return readdirSync(root).flatMap((entry) => {
@@ -15,12 +17,21 @@ function sourceFiles(root: string): string[] {
 }
 
 describe('feedback scenario catalog', () => {
-  it('keeps the rare announcement stable within a release and fresh across releases', () => {
-    expect(feedbackAnnouncementIdForVersion('1.7.1')).toBe(
-      'sdk-playground-feedback-announcement-1.7.1',
+  it('targets the real release page with the permissions required to open it', () => {
+    expect(SDK_PLAYGROUND_RELEASE_URL).toBe(
+      'https://github.com/Xoshbin/asyar/releases/tag/v0.1.1-36',
     );
-    expect(feedbackAnnouncementIdForVersion('1.7.2')).not.toBe(
-      feedbackAnnouncementIdForVersion('1.7.1'),
+    expect(manifest.permissions).toEqual(
+      expect.arrayContaining(['feedback:announce', 'shell:open-url']),
+    );
+  });
+
+  it('keeps the rare announcement stable within a scenario revision', () => {
+    expect(feedbackAnnouncementIdForVersion('1.7.1', 'dismissible-v1')).toBe(
+      'sdk-playground-feedback-announcement-1.7.1-dismissible-v1',
+    );
+    expect(feedbackAnnouncementIdForVersion('1.7.1', 'dismissible-v2')).not.toBe(
+      feedbackAnnouncementIdForVersion('1.7.1', 'dismissible-v1'),
     );
   });
 

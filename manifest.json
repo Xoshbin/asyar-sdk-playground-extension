@@ -13,6 +13,7 @@
     "clipboard:read",
     "notifications:send",
     "feedback:announce",
+    "shell:open-url",
     "storage:read",
     "storage:write",
     "network",
@@ -35,9 +36,7 @@
     "tools:register"
   ],
   "permissionArgs": {
-    "fs:watch": [
-      "/tmp/asyar-fs-watch/**"
-    ]
+    "fs:watch": ["/tmp/asyar-fs-watch/**"]
   },
   "runtimes": ["uv"],
   "preferences": [
@@ -250,9 +249,7 @@
             "description": "The text to analyse."
           }
         },
-        "required": [
-          "text"
-        ]
+        "required": ["text"]
       }
     },
     {
@@ -267,9 +264,7 @@
             "description": "The note text to save."
           }
         },
-        "required": [
-          "note"
-        ]
+        "required": ["note"]
       }
     },
     {

@@ -8,10 +8,11 @@
   } from 'asyar-sdk/view';
   import {
     FEEDBACK_SCENARIO_GROUPS,
+    SDK_PLAYGROUND_RELEASE_URL,
+    SDK_PLAYGROUND_RELEASE_VERSION,
     feedbackAnnouncementIdForVersion,
     type FeedbackScenarioId,
   } from '../lib/feedbackScenarios';
-  import manifest from '../../manifest.json';
   import { STATE_KEYS, type NotifActionLogEntry } from '../stateKeys';
   import { formatTime } from '../lib/timeFormat';
 
@@ -128,7 +129,11 @@
           activeProgress = await feedback.showProgress({ title: 'Waiting for an unknown result…' });
           break;
         case 'progress-determinate-success': {
-          activeProgress = await feedback.showProgress({ title: 'Downloading test payload', completed: 0, total: 3 });
+          activeProgress = await feedback.showProgress({
+            title: 'Downloading test payload',
+            completed: 0,
+            total: 3,
+          });
           for (let completed = 1; completed <= 3; completed += 1) {
             await sleep(500);
             await activeProgress.update({
@@ -157,9 +162,10 @@
           break;
         case 'announcement':
           await feedback.announce({
-            id: feedbackAnnouncementIdForVersion(manifest.version),
-            title: 'SDK Playground announcement',
-            message: 'This rare announcement appears only once for this playground release.',
+            id: feedbackAnnouncementIdForVersion(SDK_PLAYGROUND_RELEASE_VERSION, 'clickable-v1'),
+            title: `Updated to v${SDK_PLAYGROUND_RELEASE_VERSION}`,
+            message: 'Click to see what changed',
+            action: { type: 'open-url', url: SDK_PLAYGROUND_RELEASE_URL },
           });
           break;
         case 'hud-after-close':
@@ -171,7 +177,9 @@
             message: 'This exercises the default confirmation presentation.',
             confirmText: 'Continue',
           });
-          setOutput(confirmed ? 'Default confirmation accepted.' : 'Default confirmation cancelled.');
+          setOutput(
+            confirmed ? 'Default confirmation accepted.' : 'Default confirmation cancelled.',
+          );
           return;
         }
         case 'confirmation-danger': {
@@ -242,7 +250,6 @@
       runningScenario = null;
     }
   }
-
 </script>
 
 <div class="section custom-scrollbar">
@@ -256,7 +263,8 @@
   </header>
 
   <p class="note">
-    Fatal feedback opens the fatal dialog. HUD feedback closes the launcher. Stable announcements may be suppressed after their first successful display.
+    Fatal feedback opens the fatal dialog. HUD feedback closes the launcher. Stable announcements
+    may be suppressed after their first successful display.
   </p>
 
   {#each FEEDBACK_SCENARIO_GROUPS as group}
