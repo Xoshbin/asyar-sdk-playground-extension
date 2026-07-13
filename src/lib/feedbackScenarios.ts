@@ -35,6 +35,10 @@ export interface FeedbackScenarioGroup {
   scenarios: readonly FeedbackScenario[];
 }
 
+export function feedbackAnnouncementIdForVersion(version: string): string {
+  return `sdk-playground-feedback-announcement-${version}`;
+}
+
 export const FEEDBACK_SCENARIO_GROUPS: readonly FeedbackScenarioGroup[] = [
   {
     title: 'Feedback Bar',
@@ -107,7 +111,7 @@ export const FEEDBACK_SCENARIO_GROUPS: readonly FeedbackScenarioGroup[] = [
       {
         id: 'announcement',
         title: 'Rare announcement',
-        hint: 'Stable ID demonstrates host suppression',
+        hint: 'Release-scoped ID demonstrates host suppression',
         icon: '📣',
       },
       {

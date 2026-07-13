@@ -8,8 +8,10 @@
   } from 'asyar-sdk/view';
   import {
     FEEDBACK_SCENARIO_GROUPS,
+    feedbackAnnouncementIdForVersion,
     type FeedbackScenarioId,
   } from '../lib/feedbackScenarios';
+  import manifest from '../../manifest.json';
   import { STATE_KEYS, type NotifActionLogEntry } from '../stateKeys';
   import { formatTime } from '../lib/timeFormat';
 
@@ -155,9 +157,9 @@
           break;
         case 'announcement':
           await feedback.announce({
-            id: 'sdk-playground-feedback-announcement-v1',
+            id: feedbackAnnouncementIdForVersion(manifest.version),
             title: 'SDK Playground announcement',
-            message: 'This rare announcement appears only once because its ID is stable.',
+            message: 'This rare announcement appears only once for this playground release.',
           });
           break;
         case 'hud-after-close':

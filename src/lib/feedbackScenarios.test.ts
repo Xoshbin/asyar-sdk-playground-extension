@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { FEEDBACK_SCENARIOS } from './feedbackScenarios';
+import {
+  FEEDBACK_SCENARIOS,
+  feedbackAnnouncementIdForVersion,
+} from './feedbackScenarios';
 
 function sourceFiles(root: string): string[] {
   return readdirSync(root).flatMap((entry) => {
@@ -12,6 +15,15 @@ function sourceFiles(root: string): string[] {
 }
 
 describe('feedback scenario catalog', () => {
+  it('keeps the rare announcement stable within a release and fresh across releases', () => {
+    expect(feedbackAnnouncementIdForVersion('1.7.1')).toBe(
+      'sdk-playground-feedback-announcement-1.7.1',
+    );
+    expect(feedbackAnnouncementIdForVersion('1.7.2')).not.toBe(
+      feedbackAnnouncementIdForVersion('1.7.1'),
+    );
+  });
+
   it('covers every public feedback surface and lifecycle edge case', () => {
     expect(FEEDBACK_SCENARIOS.map(({ id }) => id)).toEqual([
       'bar-info',
