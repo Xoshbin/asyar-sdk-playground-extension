@@ -39,6 +39,7 @@
       "/tmp/asyar-fs-watch/**"
     ]
   },
+  "runtimes": ["uv"],
   "preferences": [
     {
       "name": "displayName",
