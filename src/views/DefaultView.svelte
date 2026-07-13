@@ -4,7 +4,6 @@
     ExtensionContext,
     IActionService,
     IFeedbackService,
-    INotificationService,
   } from 'asyar-sdk/view';
   import FeedbackSection from '../sections/FeedbackSection.svelte';
   import SelectionSection from '../sections/SelectionSection.svelte';
@@ -69,10 +68,9 @@
   onMount(() => {
     const actionService = context.getService<IActionService>('actions');
     const feedback = context.getService<IFeedbackService>('feedback');
-    const notification = context.getService<INotificationService>('notifications');
 
     actionService.registerActionHandler('send-notification', async () => {
-      await notification.send({
+      await feedback.sendBackground({
         title: 'SDK Playground',
         body: 'Manifest-declared action fired from the ⌘K drawer',
       });

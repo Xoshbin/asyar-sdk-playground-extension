@@ -3,7 +3,7 @@
   import type {
     ExtensionContext,
     ExtensionStateProxy,
-    INotificationService,
+    IFeedbackService,
   } from 'asyar-sdk/view';
   import { STATE_KEYS, type NotifActionLogEntry } from '../stateKeys';
   import { formatTime } from '../lib/timeFormat';
@@ -13,7 +13,7 @@
   }
   let { context }: Props = $props();
 
-  const notification = $derived(context.getService<INotificationService>('notifications'));
+  const feedback = $derived(context.getService<IFeedbackService>('feedback'));
   const stateProxy = $derived(context.getService<ExtensionStateProxy>('state'));
 
   let loading = $state(false);
@@ -62,7 +62,7 @@
   async function sendPlain() {
     loading = true;
     try {
-      const id = await notification.send({ title, body });
+      const id = await feedback.sendBackground({ title, body });
       lastSentId = id;
       output = `Sent (${id}) — no action buttons.`;
       outputOk = true;
@@ -77,7 +77,7 @@
   async function sendWithActions() {
     loading = true;
     try {
-      const id = await notification.send({
+      const id = await feedback.sendBackground({
         title,
         body,
         actions: [
@@ -99,7 +99,7 @@
   async function dismissLast() {
     if (!lastSentId) return;
     try {
-      await notification.dismiss(lastSentId);
+      await feedback.dismissBackground(lastSentId);
       output = `Dismissed ${lastSentId}`;
       outputOk = true;
     } catch (e: any) {

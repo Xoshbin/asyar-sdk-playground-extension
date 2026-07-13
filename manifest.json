@@ -100,7 +100,7 @@
     {
       "id": "send-notification",
       "title": "Fire Test Notification",
-      "description": "Send a system notification — demonstrates INotificationService from root search",
+      "description": "Send background feedback through the unified feedback service",
       "icon": "🔔",
       "category": "SDK Playground"
     },

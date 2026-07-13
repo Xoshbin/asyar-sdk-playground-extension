@@ -26,7 +26,7 @@ import type {
   ICommandService,
   IFileSystemWatcherService,
   ILogService,
-  INotificationService,
+  IFeedbackService,
   IStatusBarService,
   ISystemEventsService,
   IToolsService,
@@ -66,7 +66,7 @@ workerContext.setExtensionId(extensionId);
 
 const log = workerContext.getService<ILogService>('log');
 const commandsService = workerContext.getService<ICommandService>('commands');
-const notifier = workerContext.getService<INotificationService>('notifications');
+const notifier = workerContext.getService<IFeedbackService>('feedback');
 const applicationService = workerContext.getService<IApplicationService>('application');
 const systemEventsService = workerContext.getService<ISystemEventsService>('systemEvents');
 const statusBarService = workerContext.getService<IStatusBarService>('statusBar');
@@ -480,7 +480,7 @@ async function handleGreet(rawArgs: Record<string, unknown>): Promise<void> {
   await stateProxy.set(STATE_KEYS.greetLast, entry);
 
   try {
-    await notifier.send({ title: 'Greet', body: greeting });
+    await notifier.sendBackground({ title: 'Greet', body: greeting });
   } catch (err: unknown) {
     log.warn(`greet notification failed: ${describe(err)}`);
   }
