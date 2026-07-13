@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import {
   FEEDBACK_SCENARIOS,
   SDK_PLAYGROUND_RELEASE_URL,
-  feedbackAnnouncementIdForVersion,
+  feedbackAnnouncementIdForRun,
 } from './feedbackScenarios';
 import manifest from '../../manifest.json';
 
@@ -26,12 +26,12 @@ describe('feedback scenario catalog', () => {
     );
   });
 
-  it('keeps the rare announcement stable within a scenario revision', () => {
-    expect(feedbackAnnouncementIdForVersion('1.7.1', 'dismissible-v1')).toBe(
-      'sdk-playground-feedback-announcement-1.7.1-dismissible-v1',
+  it('keeps the simulated release stable within a run and fresh across runs', () => {
+    expect(feedbackAnnouncementIdForRun('0.1.1-36', 'clickable-v1', 'run-a')).toBe(
+      'sdk-playground-feedback-announcement-0.1.1-36-clickable-v1-run-a',
     );
-    expect(feedbackAnnouncementIdForVersion('1.7.1', 'dismissible-v2')).not.toBe(
-      feedbackAnnouncementIdForVersion('1.7.1', 'dismissible-v1'),
+    expect(feedbackAnnouncementIdForRun('0.1.1-36', 'clickable-v1', 'run-b')).not.toBe(
+      feedbackAnnouncementIdForRun('0.1.1-36', 'clickable-v1', 'run-a'),
     );
   });
 

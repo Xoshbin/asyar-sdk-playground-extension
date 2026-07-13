@@ -38,11 +38,12 @@ export interface FeedbackScenarioGroup {
 export const SDK_PLAYGROUND_RELEASE_VERSION = '0.1.1-36';
 export const SDK_PLAYGROUND_RELEASE_URL = 'https://github.com/Xoshbin/asyar/releases/tag/v0.1.1-36';
 
-export function feedbackAnnouncementIdForVersion(
+export function feedbackAnnouncementIdForRun(
   version: string,
   scenarioRevision: string,
+  runId: string,
 ): string {
-  return `sdk-playground-feedback-announcement-${version}-${scenarioRevision}`;
+  return `sdk-playground-feedback-announcement-${version}-${scenarioRevision}-${runId}`;
 }
 
 export const FEEDBACK_SCENARIO_GROUPS: readonly FeedbackScenarioGroup[] = [

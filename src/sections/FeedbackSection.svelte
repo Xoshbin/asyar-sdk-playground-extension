@@ -10,7 +10,7 @@
     FEEDBACK_SCENARIO_GROUPS,
     SDK_PLAYGROUND_RELEASE_URL,
     SDK_PLAYGROUND_RELEASE_VERSION,
-    feedbackAnnouncementIdForVersion,
+    feedbackAnnouncementIdForRun,
     type FeedbackScenarioId,
   } from '../lib/feedbackScenarios';
   import { STATE_KEYS, type NotifActionLogEntry } from '../stateKeys';
@@ -31,6 +31,7 @@
   let activeProgress: FeedbackProgressHandle | null = null;
   let lastBackgroundId = '';
   let actionLog = $state<NotifActionLogEntry[]>([]);
+  const announcementRunId = crypto.randomUUID();
 
   onMount(() => {
     let active = true;
@@ -162,7 +163,11 @@
           break;
         case 'announcement':
           await feedback.announce({
-            id: feedbackAnnouncementIdForVersion(SDK_PLAYGROUND_RELEASE_VERSION, 'clickable-v1'),
+            id: feedbackAnnouncementIdForRun(
+              SDK_PLAYGROUND_RELEASE_VERSION,
+              'clickable-v1',
+              announcementRunId,
+            ),
             title: `Updated to v${SDK_PLAYGROUND_RELEASE_VERSION}`,
             message: 'Click to see what changed',
             action: { type: 'open-url', url: SDK_PLAYGROUND_RELEASE_URL },
