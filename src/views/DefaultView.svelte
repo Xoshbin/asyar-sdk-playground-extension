@@ -8,7 +8,6 @@
   import FeedbackSection from '../sections/FeedbackSection.svelte';
   import SelectionSection from '../sections/SelectionSection.svelte';
   import ClipboardSection from '../sections/ClipboardSection.svelte';
-  import NotificationSection from '../sections/NotificationSection.svelte';
   import StorageSection from '../sections/StorageSection.svelte';
   import NetworkSection from '../sections/NetworkSection.svelte';
   import AISection from '../sections/AISection.svelte';
@@ -26,7 +25,6 @@
   import StatusBarSection from '../sections/StatusBarSection.svelte';
   import TimersSection from '../sections/TimersSection.svelte';
   import FileSystemWatcherSection from '../sections/FileSystemWatcherSection.svelte';
-  import DiagnosticsSection from '../sections/DiagnosticsSection.svelte';
 
   interface Props {
     context: ExtensionContext;
@@ -37,10 +35,9 @@
 
   const tabs = [
     { id: 'preferences', label: 'Preferences', icon: '⚙️' },
-    { id: 'feedback',    label: 'Feedback',    icon: '🍞' },
+    { id: 'feedback',    label: 'Feedback',    icon: '💬' },
     { id: 'selection',   label: 'Selection',   icon: '✂️' },
     { id: 'clipboard',   label: 'Clipboard',   icon: '📋' },
-    { id: 'notifications', label: 'Notifications', icon: '🔔' },
     { id: 'storage',     label: 'Storage',     icon: '📦' },
     { id: 'network',     label: 'Network',     icon: '🌐' },
     { id: 'ai',          label: 'AI',          icon: '🤖' },
@@ -57,7 +54,6 @@
     { id: 'statusbar',   label: 'Status Bar',  icon: '🧭' },
     { id: 'timers',      label: 'Timers',      icon: '⏰' },
     { id: 'fswatch',     label: 'FS Watch',    icon: '👁️' },
-    { id: 'diagnostics', label: 'Diagnostics', icon: '🩺' },
   ];
 
   // ───────────────────────────────────────────────────────────────────────
@@ -114,8 +110,6 @@
       <SelectionSection {context} />
     {:else if activeTab === 'clipboard'}
       <ClipboardSection {context} />
-    {:else if activeTab === 'notifications'}
-      <NotificationSection {context} />
     {:else if activeTab === 'storage'}
       <StorageSection {context} />
     {:else if activeTab === 'network'}
@@ -148,8 +142,6 @@
       <TimersSection {context} />
     {:else if activeTab === 'fswatch'}
       <FileSystemWatcherSection {context} />
-    {:else if activeTab === 'diagnostics'}
-      <DiagnosticsSection {context} />
     {/if}
   </div>
 </div>

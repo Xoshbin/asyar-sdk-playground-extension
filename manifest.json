@@ -12,6 +12,7 @@
     "selection:read",
     "clipboard:read",
     "notifications:send",
+    "feedback:announce",
     "storage:read",
     "storage:write",
     "network",
@@ -31,7 +32,6 @@
     "timers:schedule",
     "timers:cancel",
     "timers:list",
-    "diagnostics:report",
     "tools:register"
   ],
   "permissionArgs": {
@@ -171,13 +171,13 @@
     {
       "id": "notif-extend",
       "name": "Coffee — extend",
-      "description": "Fired by the Extend button on the notification demo. Records the event in the Notifications section log.",
+      "description": "Fired by the Extend button in the feedback harness.",
       "mode": "background"
     },
     {
       "id": "notif-stop",
       "name": "Coffee — stop",
-      "description": "Fired by the Stop button on the notification demo. Records the event in the Notifications section log.",
+      "description": "Fired by the Stop button in the feedback harness.",
       "mode": "background"
     },
     {

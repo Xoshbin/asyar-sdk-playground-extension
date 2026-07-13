@@ -3,7 +3,7 @@
   import type {
     ExtensionContext,
     ExtensionStateProxy,
-    IDiagnosticsService,
+    IFeedbackService,
   } from 'asyar-sdk/view';
   import { STATE_KEYS, type TickEvent } from '../stateKeys';
   import { formatTime } from '../lib/timeFormat';
@@ -17,7 +17,7 @@
   let log = $state<HTMLElement | null>(null);
 
   const stateProxy = $derived(context.getService<ExtensionStateProxy>('state'));
-  const diagnostics = $derived(context.getService<IDiagnosticsService>('diagnostics'));
+  const feedback = $derived(context.getService<IFeedbackService>('feedback'));
 
   onMount(() => {
     let active = true;
@@ -64,9 +64,9 @@
     await context.request('simulateScheduledTick', { commandId: 'tick-test' });
   }
 
-  async function simulateAndToast() {
+  async function simulateAndReport() {
     await context.request('simulateScheduledTick', { commandId: 'tick-test' });
-    await diagnostics.report({
+    await feedback.report({
       kind: 'manual',
       severity: 'success',
       retryable: false,
@@ -110,11 +110,11 @@
         <span class="btn-hint">context.request('simulateScheduledTick')</span>
       </span>
     </button>
-    <button class="action-btn" onclick={simulateAndToast}>
-      <span class="btn-icon">🍞</span>
+    <button class="action-btn" onclick={simulateAndReport}>
+      <span class="btn-icon">💬</span>
       <span class="btn-text">
-        <span class="btn-name">Tick + Toast</span>
-        <span class="btn-hint">simulate + feedback.showToast()</span>
+        <span class="btn-name">Tick + Feedback</span>
+        <span class="btn-hint">simulate + feedback.report()</span>
       </span>
     </button>
   </div>
