@@ -1,13 +1,13 @@
 {
   "id": "org.asyar.sdk-playground",
   "name": "SDK Playground",
-  "version": "1.7.1",
+  "version": "1.7.2",
   "type": "extension",
   "description": "Developer playground demonstrating every Asyar SDK service in a Tier 2 extension",
   "author": "Developer",
   "searchable": false,
   "icon": "🧪",
-  "asyarSdk": "^4.0.0",
+  "asyarSdk": "^4.3.0",
   "permissions": [
     "selection:read",
     "clipboard:read",
@@ -36,9 +36,13 @@
     "tools:register"
   ],
   "permissionArgs": {
-    "fs:watch": ["/tmp/asyar-fs-watch/**"]
+    "fs:watch": [
+      "/tmp/asyar-fs-watch/**"
+    ]
   },
-  "runtimes": ["uv"],
+  "runtimes": [
+    "uv"
+  ],
   "preferences": [
     {
       "name": "displayName",
@@ -249,7 +253,9 @@
             "description": "The text to analyse."
           }
         },
-        "required": ["text"]
+        "required": [
+          "text"
+        ]
       }
     },
     {
@@ -264,7 +270,9 @@
             "description": "The note text to save."
           }
         },
-        "required": ["note"]
+        "required": [
+          "note"
+        ]
       }
     },
     {
