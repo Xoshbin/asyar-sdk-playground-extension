@@ -1,7 +1,7 @@
 {
   "id": "org.asyar.sdk-playground",
   "name": "SDK Playground",
-  "version": "1.7.2",
+  "version": "1.7.3",
   "type": "extension",
   "description": "Developer playground demonstrating every Asyar SDK service in a Tier 2 extension",
   "author": "Developer",
@@ -17,7 +17,6 @@
     "storage:read",
     "storage:write",
     "network",
-    "ai:use",
     "oauth:use",
     "shell:spawn",
     "fs:read",

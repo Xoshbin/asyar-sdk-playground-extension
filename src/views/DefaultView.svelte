@@ -10,7 +10,6 @@
   import ClipboardSection from '../sections/ClipboardSection.svelte';
   import StorageSection from '../sections/StorageSection.svelte';
   import NetworkSection from '../sections/NetworkSection.svelte';
-  import AISection from '../sections/AISection.svelte';
   import OAuthSection from '../sections/OAuthSection.svelte';
   import ShellSection from '../sections/ShellSection.svelte';
   import FileManagerSection from '../sections/FileManagerSection.svelte';
@@ -40,7 +39,6 @@
     { id: 'clipboard',   label: 'Clipboard',   icon: '📋' },
     { id: 'storage',     label: 'Storage',     icon: '📦' },
     { id: 'network',     label: 'Network',     icon: '🌐' },
-    { id: 'ai',          label: 'AI',          icon: '🤖' },
     { id: 'oauth',       label: 'OAuth',       icon: '🔑' },
     { id: 'shell',       label: 'Shell',       icon: '🐚' },
     { id: 'filemanager', label: 'File Manager', icon: '📁' },
@@ -114,8 +112,6 @@
       <StorageSection {context} />
     {:else if activeTab === 'network'}
       <NetworkSection {context} />
-    {:else if activeTab === 'ai'}
-      <AISection {context} />
     {:else if activeTab === 'oauth'}
       <OAuthSection {context} />
     {:else if activeTab === 'shell'}
