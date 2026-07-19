@@ -37,6 +37,9 @@
   "permissionArgs": {
     "fs:watch": [
       "/tmp/asyar-fs-watch/**"
+    ],
+    "shell:spawn": [
+      "echo"
     ]
   },
   "runtimes": [
@@ -168,6 +171,13 @@
       "schedule": {
         "intervalSeconds": 10
       },
+      "mode": "background"
+    },
+    {
+      "id": "run-echo",
+      "name": "Run echo (worker spawn)",
+      "description": "Spawn echo from the background worker while the launcher window is hidden — runs with no runtime trust prompt because echo is declared in permissionArgs and seeded at consent.",
+      "icon": "🐚",
       "mode": "background"
     },
     {

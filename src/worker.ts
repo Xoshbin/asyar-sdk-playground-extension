@@ -27,6 +27,7 @@ import type {
   IFileSystemWatcherService,
   ILogService,
   IFeedbackService,
+  IShellService,
   IStatusBarService,
   ISystemEventsService,
   IToolsService,
@@ -46,6 +47,7 @@ import {
   type SystemEventKind,
   type TickEvent,
   type TimerFireLogEntry,
+  type WorkerShellProbe,
 } from './stateKeys';
 import { appendBounded } from './lib/logBuffer';
 import { parseGreetArgs, buildGreeting } from './lib/greet';
@@ -73,6 +75,7 @@ const statusBarService = workerContext.getService<IStatusBarService>('statusBar'
 const fsWatcherService = workerContext.getService<IFileSystemWatcherService>('fsWatcher');
 const stateProxy = workerContext.getService<ExtensionStateProxy>('state');
 const toolsService = workerContext.getService<IToolsService>('tools');
+const shellService = workerContext.getService<IShellService>('shell');
 
 // ───────────────────────────────────────────────────────────────────────────
 // Push subscription controllers — worker-owned so they survive view Dormant.
@@ -313,6 +316,10 @@ class SDKPlaygroundWorkerExtension implements Extension {
         await handleGreet(rawArgs);
         return;
 
+      case 'run-echo':
+        runWorkerShellProbe();
+        return;
+
       default:
         if (DYNAMIC_IDS.has(commandId)) {
           await recordDynamicExecute(commandId, rawArgs);
@@ -461,6 +468,48 @@ const AGENT_TOOL_HANDLERS: Record<string, (args: unknown) => Promise<unknown>> =
   playground_save_note: handleSaveNoteTool,
   playground_list_notes: handleListNotesTool,
 };
+
+// ───────────────────────────────────────────────────────────────────────────
+// Worker-driven shell spawn — invoked by the `run-echo` background command.
+// This is the exact case the old runtime trust prompt could never satisfy:
+// selecting a background command hides the launcher window, so a per-spawn
+// "trust this binary?" dialog was unanswerable and the SDK's IPC call timed
+// out. `echo` is declared in permissionArgs["shell:spawn"], so its trust is
+// seeded when the user accepts the install/enable consent, and this background
+// spawn runs with no prompt. The result is mirrored to state so the Shell
+// section can show it.
+// ───────────────────────────────────────────────────────────────────────────
+function runWorkerShellProbe(): void {
+  const at = Date.now();
+  let stdout = '';
+  try {
+    const handle = shellService.spawn({ program: 'echo', args: ['hello from the worker'] });
+    handle.onChunk((chunk) => {
+      if (chunk.stream === 'stdout') stdout += chunk.data;
+    });
+    handle.onDone((exitCode) => {
+      log.info(`[${extensionId}] worker echo spawn done (exit ${exitCode ?? '?'})`);
+      void stateProxy.set(STATE_KEYS.workerShellProbe, {
+        at,
+        program: 'echo',
+        status: 'ok',
+        exitCode: exitCode ?? null,
+        output: stdout.trim(),
+      } satisfies WorkerShellProbe);
+    });
+    handle.onError(({ code, message }) => {
+      log.warn(`[${extensionId}] worker echo spawn failed: [${code}] ${message}`);
+      void stateProxy.set(STATE_KEYS.workerShellProbe, {
+        at,
+        program: 'echo',
+        status: 'error',
+        error: `[${code}] ${message}`,
+      } satisfies WorkerShellProbe);
+    });
+  } catch (err: unknown) {
+    log.warn(`worker shell probe threw: ${describe(err)}`);
+  }
+}
 
 // ───────────────────────────────────────────────────────────────────────────
 // greet dispatcher — §4.2 resolution: use notification.send, not feedback.

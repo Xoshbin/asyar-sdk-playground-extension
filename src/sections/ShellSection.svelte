@@ -1,11 +1,15 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import type {
     ExtensionContext,
+    ExtensionStateProxy,
     IShellService,
     IStorageService,
     ShellDescriptor,
     ShellHandle,
   } from 'asyar-sdk/view';
+  import { STATE_KEYS, type WorkerShellProbe } from '../stateKeys';
+  import { formatTime } from '../lib/timeFormat';
 
   interface Props {
     context: ExtensionContext;
@@ -14,6 +18,41 @@
 
   const shell = $derived(context.getService<IShellService>('shell'));
   const storage = $derived(context.getService<IStorageService>('storage'));
+  const stateProxy = $derived(context.getService<ExtensionStateProxy>('state'));
+
+  // Worker-driven spawn result (see worker.ts runWorkerShellProbe). Proves the
+  // background spawn ran without a runtime trust prompt because `echo` was
+  // seeded at consent acceptance from permissionArgs["shell:spawn"].
+  let workerProbe = $state<WorkerShellProbe | null>(null);
+
+  onMount(() => {
+    let active = true;
+    let unsub: (() => void | Promise<void>) | null = null;
+    (async () => {
+      const [initial, off] = await Promise.all([
+        stateProxy.get(STATE_KEYS.workerShellProbe),
+        stateProxy.subscribe(STATE_KEYS.workerShellProbe, (v) => {
+          if (active) workerProbe = (v as WorkerShellProbe | null) ?? null;
+        }),
+      ]);
+      if (!active) {
+        void off();
+        return;
+      }
+      workerProbe = (initial as WorkerShellProbe | null) ?? null;
+      unsub = off;
+    })();
+    return () => {
+      active = false;
+      if (unsub) {
+        try {
+          void unsub();
+        } catch {
+          // Best-effort teardown
+        }
+      }
+    };
+  });
 
   interface OutputLine {
     kind: 'stdout' | 'stderr' | 'exit' | 'error' | 'aborted' | 'info';
@@ -143,6 +182,25 @@
       <span class="section-desc">Spawn, detach, list, reattach — exercises shell.spawn / shell.list / shell.attach</span>
     </div>
   </header>
+
+  <div class="presets-label">WORKER-DRIVEN SPAWN — trust seeded at consent</div>
+  <div class="worker-probe">
+    {#if workerProbe}
+      <div class="worker-probe-body {workerProbe.status}">
+        {#if workerProbe.status === 'ok'}
+          ✓ worker ran <code>echo</code> at {formatTime(workerProbe.at)} → exit {workerProbe.exitCode ?? '?'}
+          {#if workerProbe.output}<span class="worker-probe-out">“{workerProbe.output}”</span>{/if}
+        {:else}
+          ✗ worker <code>echo</code> spawn failed at {formatTime(workerProbe.at)} — {workerProbe.error}
+        {/if}
+      </div>
+    {:else}
+      <div class="worker-probe-body muted">
+        No worker spawn recorded yet — run the “Run echo (worker spawn)” command from root search to
+        fire it.
+      </div>
+    {/if}
+  </div>
 
   <div class="row">
     <div class="field field-program">
@@ -310,6 +368,37 @@
 
   .presets {
     flex-wrap: wrap;
+  }
+
+  .worker-probe {
+    padding: 0 var(--space-6);
+  }
+
+  .worker-probe-body {
+    font-size: var(--font-size-xs);
+    font-family: var(--font-mono);
+    padding: var(--space-2) var(--space-3);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+  }
+
+  .worker-probe-body.ok {
+    color: var(--text-primary);
+  }
+
+  .worker-probe-body.error {
+    color: var(--accent-danger);
+  }
+
+  .worker-probe-body.muted {
+    color: var(--text-tertiary);
+  }
+
+  .worker-probe-out {
+    color: var(--text-tertiary);
+    margin-left: var(--space-2);
   }
 
   .spawn-list {

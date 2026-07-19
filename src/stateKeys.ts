@@ -52,6 +52,11 @@ export const STATE_KEYS = {
   // `playground_save_note` tool. Survives launcher restarts because
   // ExtensionStateProxy is SQLite-backed, scoped to this extension id.
   agentNotes: 'agent.notes',
+
+  // Worker-driven shell spawn probe. The worker spawns `echo` (declared in
+  // permissionArgs["shell:spawn"], so trust is seeded at consent — no runtime
+  // prompt). View mirrors the last result to prove the background spawn ran.
+  workerShellProbe: 'shell.workerProbe',
 } as const;
 
 export interface AgentNote {
@@ -144,6 +149,18 @@ export interface GreetLast {
   at: number;
   greeting: string;
   args: Record<string, unknown>;
+}
+
+export interface WorkerShellProbe {
+  at: number;
+  program: string;
+  status: 'ok' | 'error';
+  /** Present on success; null when the process reported no code. */
+  exitCode?: number | null;
+  /** Trimmed stdout on success. */
+  output?: string;
+  /** `[code] message` on failure. */
+  error?: string;
 }
 
 export interface FsWatchActiveState {
