@@ -214,7 +214,8 @@
           "name": "name",
           "type": "text",
           "placeholder": "Who to greet",
-          "required": true
+          "required": true,
+          "seed": "none"
         },
         {
           "name": "style",
@@ -234,13 +235,15 @@
               "value": "rhyming",
               "title": "Rhyming"
             }
-          ]
+          ],
+          "seed": "lastUsed"
         },
         {
           "name": "volume",
           "type": "number",
           "placeholder": "Exclamation count",
-          "default": 1
+          "default": 1,
+          "seed": "default"
         }
       ],
       "mode": "background"
