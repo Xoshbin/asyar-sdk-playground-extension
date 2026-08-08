@@ -296,5 +296,68 @@
         "properties": {}
       }
     }
+  ],
+  "walkthrough": [
+    {
+      "id": "open-playground",
+      "title": "See every SDK service in one place",
+      "summary": "Open the SDK Playground view",
+      "icon": "🧪",
+      "order": 200,
+      "body": "The playground exercises every service the Asyar SDK exposes to a Tier 2 extension — storage, cache, clipboard, selection, notifications, timers, OAuth, shell, filesystem, tools — each with a live control you can poke.\n\nIt is the fastest way to see what your own extension is allowed to do, and what the call looks like.\n\n## To complete the task\n\nRun **Open SDK Playground**.",
+      "completion": {
+        "type": "launch",
+        "target": "cmd_org.asyar.sdk-playground_open"
+      }
+    },
+    {
+      "id": "run-background-command",
+      "title": "Run a command with no window at all",
+      "summary": "Execute a background command from the search bar",
+      "icon": "🧪",
+      "order": 210,
+      "body": "A command with `mode: \"background\"` runs inside the extension worker and never opens a view. The launcher closes, the work happens, and the extension reports back through a notification or the feedback bar.\n\nThis is the right shape for anything that does not need to show you a list.\n\n## To complete the task\n\nRun **Greet Someone** from the search bar.",
+      "completion": {
+        "type": "launch",
+        "target": "cmd_org.asyar.sdk-playground_greet"
+      }
+    },
+    {
+      "id": "spawn-a-process",
+      "title": "Shell out from inside a sandboxed worker",
+      "summary": "Run the worker spawn demo three times",
+      "icon": "🧪",
+      "order": 220,
+      "body": "Tier 2 extensions run sandboxed and cannot touch your machine directly. `shell:spawn` is the declared, permission-gated escape hatch — the worker asks the host to run a process and streams the output back.\n\nRunning it a few times is worth doing: watch the run appear in the **Runs** view each time, which is where every spawned process is recorded.\n\n## To complete the task\n\nRun **Run echo (worker spawn)** three times.",
+      "completion": {
+        "type": "count",
+        "target": "cmd_org.asyar.sdk-playground_run-echo",
+        "times": 3
+      }
+    },
+    {
+      "id": "playground-habit",
+      "title": "Come back to the playground",
+      "summary": "Use any playground command on two separate days",
+      "icon": "🧪",
+      "order": 230,
+      "body": "One visit shows you the surface. Coming back is when you start reaching for a specific service because you now know it exists.\n\nThis task counts any playground command, on two different days.\n\n## To complete the task\n\nRun any SDK Playground command on two separate days.",
+      "completion": {
+        "type": "count",
+        "target": "cmd_org.asyar.sdk-playground_*",
+        "distinctDays": 2
+      }
+    },
+    {
+      "id": "read-the-source",
+      "title": "Read the playground source",
+      "summary": "Open the extension source and copy a pattern from it",
+      "icon": "🧪",
+      "order": 240,
+      "body": "Every control in the playground maps to a few lines in `src/worker.ts` or `src/view.ts`. When you need a service in your own extension, the fastest path is to copy the call from here rather than read the reference docs cold.\n\nNothing observable happens when you read source, so this one is yours to tick.\n\n## To complete the task\n\nOpen the playground source, then mark this task complete from the action panel.",
+      "completion": {
+        "type": "manual"
+      }
+    }
   ]
 }
