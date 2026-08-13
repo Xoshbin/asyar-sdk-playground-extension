@@ -27,6 +27,7 @@ import type {
   IFileSystemWatcherService,
   ILogService,
   IFeedbackService,
+  INetworkService,
   IShellService,
   IStatusBarService,
   ISystemEventsService,
@@ -55,6 +56,7 @@ import { createSystemEventsController } from './worker/subscriptions/systemEvent
 import { createApplicationPushController } from './worker/subscriptions/application';
 import { createFsWatchController } from './worker/subscriptions/fsWatch';
 import { createStatusBarController } from './worker/tray/trayController';
+import { createWorkerWebSocketProbe } from './worker/websocketProbe';
 
 const extensionId =
   window.location.hostname === 'localhost' ||
@@ -76,6 +78,7 @@ const fsWatcherService = workerContext.getService<IFileSystemWatcherService>('fs
 const stateProxy = workerContext.getService<ExtensionStateProxy>('state');
 const toolsService = workerContext.getService<IToolsService>('tools');
 const shellService = workerContext.getService<IShellService>('shell');
+const networkService = workerContext.getService<INetworkService>('network');
 
 // ───────────────────────────────────────────────────────────────────────────
 // Push subscription controllers — worker-owned so they survive view Dormant.
@@ -94,6 +97,10 @@ const trayController = createStatusBarController({
 });
 const fsWatchController = createFsWatchController({
   service: fsWatcherService,
+  state: stateProxy,
+});
+const webSocketProbe = createWorkerWebSocketProbe({
+  network: networkService,
   state: stateProxy,
 });
 
@@ -271,6 +278,7 @@ class SDKPlaygroundWorkerExtension implements Extension {
     applicationPushController.shutdown();
     await trayController.shutdown();
     await fsWatchController.shutdown();
+    await webSocketProbe.disconnect();
     // Drop dynamic registrations on deactivate so a disabled extension
     // doesn't leave stale items in root search. Re-enable will re-register.
     try {
@@ -654,6 +662,17 @@ workerContext.onRequest<Record<string, never>, { ok: true }>(
 workerContext.onRequest<Record<string, never>, { ok: false; error: string }>(
   'statusBar.tryInvalid',
   async () => ({ ok: false, error: await trayController.tryInvalid() }),
+);
+
+// network.workerWebSocketProbe — the worker opens the socket and mirrors its
+// callback result through state. The view never owns this handle, making the
+// role boundary observable in the Network tab.
+workerContext.onRequest<{ url?: string }, { ok: boolean }>(
+  'network.workerWebSocketProbe',
+  async (payload) => {
+    const url = payload?.url?.trim() || 'wss://echo.websocket.org';
+    return webSocketProbe.connect(url);
+  },
 );
 
 // ───────────────────────────────────────────────────────────────────────────

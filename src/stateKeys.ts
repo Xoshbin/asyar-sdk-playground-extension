@@ -57,6 +57,12 @@ export const STATE_KEYS = {
   // permissionArgs["shell:spawn"], so trust is seeded at consent — no runtime
   // prompt). View mirrors the last result to prove the background spawn ran.
   workerShellProbe: 'shell.workerProbe',
+
+  // Worker-owned WebSocket probe. The worker receives the socket callbacks
+  // and deliberately mirrors a serializable result through extension state;
+  // this lets the view demonstrate role isolation without receiving a socket
+  // push event itself.
+  workerWebSocketProbe: 'network.workerWebSocketProbe',
 } as const;
 
 export interface AgentNote {
@@ -161,6 +167,14 @@ export interface WorkerShellProbe {
   output?: string;
   /** `[code] message` on failure. */
   error?: string;
+}
+
+export interface WorkerWebSocketProbe {
+  at: number;
+  role: 'worker';
+  url: string;
+  status: 'connecting' | 'connected' | 'message' | 'error' | 'closed';
+  data?: string;
 }
 
 export interface FsWatchActiveState {
