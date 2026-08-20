@@ -8,6 +8,12 @@
     ShellDescriptor,
     ShellHandle,
   } from 'asyar-sdk/view';
+  import {
+    PermissionDeniedError,
+    PermissionConsentRequiredError,
+    IpcTimeoutError,
+    AsyarError,
+  } from 'asyar-sdk/contracts';
   import { STATE_KEYS, type WorkerShellProbe } from '../stateKeys';
   import { formatTime } from '../lib/timeFormat';
 
@@ -153,7 +159,15 @@
     try {
       liveSpawns = await shell.list();
     } catch (err) {
-      lastListError = err instanceof Error ? err.message : String(err);
+      if (err instanceof PermissionDeniedError || err instanceof PermissionConsentRequiredError) {
+        lastListError = `[permission] ${err.message}`;
+      } else if (err instanceof IpcTimeoutError) {
+        lastListError = `[timeout] ${err.message}`;
+      } else if (err instanceof AsyarError) {
+        lastListError = `[${err.code}] ${err.message}`;
+      } else {
+        lastListError = err instanceof Error ? err.message : String(err);
+      }
       liveSpawns = [];
     }
   }

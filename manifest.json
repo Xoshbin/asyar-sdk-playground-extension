@@ -162,7 +162,8 @@
           "category": "SDK Playground"
         }
       ],
-      "mode": "background"
+      "mode": "background",
+      "searchable": false
     },
     {
       "id": "tick-test-fast",
@@ -171,7 +172,8 @@
       "schedule": {
         "intervalSeconds": 10
       },
-      "mode": "background"
+      "mode": "background",
+      "searchable": false
     },
     {
       "id": "run-echo",
@@ -184,25 +186,29 @@
       "id": "notif-extend",
       "name": "Coffee — extend",
       "description": "Fired by the Extend button in the feedback harness.",
-      "mode": "background"
+      "mode": "background",
+      "searchable": false
     },
     {
       "id": "notif-stop",
       "name": "Coffee — stop",
       "description": "Fired by the Stop button in the feedback harness.",
-      "mode": "background"
+      "mode": "background",
+      "searchable": false
     },
     {
       "id": "timer-ring",
       "name": "Timer — ring",
       "description": "Fired by a one-shot timer scheduled from the Timers section. Records the fire in the Timers log.",
-      "mode": "background"
+      "mode": "background",
+      "searchable": false
     },
     {
       "id": "timer-snooze",
       "name": "Timer — snooze",
       "description": "Fired by the snooze demo timer. Records the fire and the original schedule args in the Timers log.",
-      "mode": "background"
+      "mode": "background",
+      "searchable": false
     },
     {
       "id": "greet",
