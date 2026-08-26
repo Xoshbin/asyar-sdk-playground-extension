@@ -162,8 +162,7 @@
           "category": "SDK Playground"
         }
       ],
-      "mode": "background",
-      "searchable": false
+      "mode": "background"
     },
     {
       "id": "tick-test-fast",
