@@ -1,6 +1,6 @@
 {
   "name": "org.asyar.sdk-playground",
-  "version": "1.0.0",
+  "version": "1.9.0",
   "description": "Developer playground for testing Asyar SDK services in a Tier 2 extension",
   "type": "module",
   "scripts": {
