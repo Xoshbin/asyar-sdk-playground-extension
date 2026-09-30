@@ -124,7 +124,7 @@
   "commands": [
     {
       "id": "open",
-      "name": "Open SDK Playground",
+      "name": "SDK Playground",
       "description": "Exercise every SDK service in a sandboxed Tier 2 extension",
       "icon": "🧪",
       "actions": [
@@ -310,7 +310,7 @@
       "summary": "Open the SDK Playground view",
       "icon": "🧪",
       "order": 200,
-      "body": "The playground exercises every service the Asyar SDK exposes to a Tier 2 extension — storage, cache, clipboard, selection, notifications, timers, OAuth, shell, filesystem, tools — each with a live control you can poke.\n\nIt is the fastest way to see what your own extension is allowed to do, and what the call looks like.\n\n## To complete the task\n\nRun **Open SDK Playground**.",
+      "body": "The playground exercises every service the Asyar SDK exposes to a Tier 2 extension — storage, cache, clipboard, selection, notifications, timers, OAuth, shell, filesystem, tools — each with a live control you can poke.\n\nIt is the fastest way to see what your own extension is allowed to do, and what the call looks like.\n\n## To complete the task\n\nRun **SDK Playground**.",
       "completion": {
         "type": "launch",
         "target": "cmd_org.asyar.sdk-playground_open"
