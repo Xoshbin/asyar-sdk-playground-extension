@@ -19,7 +19,7 @@
     try {
       const result = await selection.getSelectedText();
       setOutput(result || '(nothing selected)');
-    } catch (e: any) { setOutput(`Error: ${e.code ?? e.message ?? e}`, false); }
+    } catch (e: any) { setOutput(e.code === 'LAUNCHER_FOCUSED' ? 'Could not see your selection: Asyar has focus and no previous app is known. Select something in another app, then re-open Asyar.' : `Error: ${e.code ?? e.message ?? e}`, false); }
     finally { loading = false; }
   }
 
@@ -28,7 +28,7 @@
     try {
       const items = await selection.getSelectedFinderItems();
       setOutput(items.length > 0 ? items.join('\n') : '(no items selected)');
-    } catch (e: any) { setOutput(`Error: ${e.code ?? e.message ?? e}`, false); }
+    } catch (e: any) { setOutput(e.code === 'LAUNCHER_FOCUSED' ? 'Could not see your selection: Asyar has focus and no previous app is known. Select something in another app, then re-open Asyar.' : `Error: ${e.code ?? e.message ?? e}`, false); }
     finally { loading = false; }
   }
 </script>
