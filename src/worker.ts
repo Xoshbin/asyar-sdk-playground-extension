@@ -14,10 +14,7 @@
 // `asyar-sdk/contracts` (pure types).
 // ───────────────────────────────────────────────────────────────────────────
 
-import {
-  ExtensionContext as WorkerExtensionContext,
-  extensionBridge,
-} from 'asyar-sdk/worker';
+import { ExtensionContext as WorkerExtensionContext, extensionBridge } from 'asyar-sdk/worker';
 import type {
   Extension,
   ExtensionContext,
@@ -58,12 +55,7 @@ import { createFsWatchController } from './worker/subscriptions/fsWatch';
 import { createStatusBarController } from './worker/tray/trayController';
 import { createWorkerWebSocketProbe } from './worker/websocketProbe';
 
-const extensionId =
-  window.location.hostname === 'localhost' ||
-  window.location.hostname === 'asyar-extension.localhost'
-    ? window.location.pathname.split('/').filter(Boolean)[0] ||
-      'org.asyar.sdk-playground'
-    : window.location.hostname || 'org.asyar.sdk-playground';
+const extensionId = manifest.id;
 
 const workerContext = new WorkerExtensionContext();
 workerContext.setExtensionId(extensionId);
@@ -116,10 +108,7 @@ async function appendToLog<T>(key: string, entry: T, cap: number): Promise<void>
 // ───────────────────────────────────────────────────────────────────────────
 // Scheduling dispatcher — the tick-test / tick-test-fast path.
 // ───────────────────────────────────────────────────────────────────────────
-async function recordTick(
-  commandId: string,
-  args: Record<string, unknown>,
-): Promise<void> {
+async function recordTick(commandId: string, args: Record<string, unknown>): Promise<void> {
   const scheduledTick = args?.scheduledTick === true;
   const entry: TickEvent = {
     at: Date.now(),
@@ -160,9 +149,9 @@ async function recordNotifAction(
   commandId: string,
   rawArgs: Record<string, unknown>,
 ): Promise<void> {
-  const userArgs = ((rawArgs as { arguments?: Record<string, unknown> }).arguments as
-    | Record<string, unknown>
-    | undefined) ?? rawArgs;
+  const userArgs =
+    ((rawArgs as { arguments?: Record<string, unknown> }).arguments as
+      Record<string, unknown> | undefined) ?? rawArgs;
   const note =
     commandId === 'notif-extend'
       ? `☕ extend by ${String(userArgs.minutes ?? '?')}m`
@@ -187,13 +176,10 @@ async function recordNotifAction(
 // worker iframe). Must land in state so the view picks it up on its next
 // mount even if it was Dormant at fire time.
 // ───────────────────────────────────────────────────────────────────────────
-async function recordTimerFire(
-  commandId: string,
-  rawArgs: Record<string, unknown>,
-): Promise<void> {
-  const userArgs = ((rawArgs as { arguments?: Record<string, unknown> }).arguments as
-    | Record<string, unknown>
-    | undefined) ?? rawArgs;
+async function recordTimerFire(commandId: string, rawArgs: Record<string, unknown>): Promise<void> {
+  const userArgs =
+    ((rawArgs as { arguments?: Record<string, unknown> }).arguments as
+      Record<string, unknown> | undefined) ?? rawArgs;
   const note =
     commandId === 'timer-ring'
       ? `⏰ ring (${String(userArgs.label ?? 'no label')})`
@@ -224,14 +210,14 @@ class SDKPlaygroundWorkerExtension implements Extension {
     // covers the "launcher relaunched while a subscription was active"
     // path — the view never gets a chance to toggle them back on.
     const sysDesired =
-      ((await stateProxy.get(STATE_KEYS.subsSystemEvents)) as
-        | Partial<Record<SystemEventKind, boolean>>
-        | null) ?? {};
+      ((await stateProxy.get(STATE_KEYS.subsSystemEvents)) as Partial<
+        Record<SystemEventKind, boolean>
+      > | null) ?? {};
     await systemEventsController.applyDesired(sysDesired);
     const appDesired =
-      ((await stateProxy.get(STATE_KEYS.subsApplication)) as
-        | Partial<Record<ApplicationPushKind, boolean>>
-        | null) ?? {};
+      ((await stateProxy.get(STATE_KEYS.subsApplication)) as Partial<
+        Record<ApplicationPushKind, boolean>
+      > | null) ?? {};
     await applicationPushController.applyDesired(appDesired);
 
     // Re-register tray items that were active before this launch.
@@ -248,9 +234,7 @@ class SDKPlaygroundWorkerExtension implements Extension {
     try {
       await commandsService.replaceDynamicCommands(DYNAMIC_REGISTRATIONS);
       await publishDynamicRegisteredState();
-      log.info(
-        `[${extensionId}] registered ${DYNAMIC_REGISTRATIONS.length} dynamic commands`,
-      );
+      log.info(`[${extensionId}] registered ${DYNAMIC_REGISTRATIONS.length} dynamic commands`);
     } catch (err: unknown) {
       log.warn(`replaceDynamicCommands failed: ${describe(err)}`);
     }
@@ -299,10 +283,7 @@ class SDKPlaygroundWorkerExtension implements Extension {
     log.info(`[${extensionId}] worker deactivated`);
   }
 
-  async executeCommand(
-    commandId: string,
-    args?: CommandExecuteArgs,
-  ): Promise<unknown> {
+  async executeCommand(commandId: string, args?: CommandExecuteArgs): Promise<unknown> {
     const rawArgs = (args ?? {}) as Record<string, unknown>;
     switch (commandId) {
       case 'tick-test':
@@ -382,9 +363,9 @@ async function recordDynamicExecute(
   commandId: string,
   rawArgs: Record<string, unknown>,
 ): Promise<void> {
-  const userArgs = ((rawArgs as { arguments?: Record<string, unknown> }).arguments as
-    | Record<string, unknown>
-    | undefined) ?? {};
+  const userArgs =
+    ((rawArgs as { arguments?: Record<string, unknown> }).arguments as
+      Record<string, unknown> | undefined) ?? {};
   const entry: DynamicCommandsLogEntry = {
     at: Date.now(),
     commandId,
@@ -412,9 +393,7 @@ async function recordDynamicExecute(
 // ───────────────────────────────────────────────────────────────────────────
 async function handleTextStatsTool(args: unknown): Promise<unknown> {
   const text =
-    typeof (args as { text?: unknown })?.text === 'string'
-      ? ((args as { text: string }).text)
-      : '';
+    typeof (args as { text?: unknown })?.text === 'string' ? (args as { text: string }).text : '';
 
   if (text.length === 0) {
     return { characters: 0, words: 0, longestWord: null };
@@ -423,10 +402,7 @@ async function handleTextStatsTool(args: unknown): Promise<unknown> {
   // Word-boundary regex handles punctuation correctly
   // ("don't" → "don" + "t" with `\b\w+\b`; close enough for a demo).
   const words = text.match(/\b\w+\b/g) ?? [];
-  const longestWord = words.reduce(
-    (longest, w) => (w.length > longest.length ? w : longest),
-    '',
-  );
+  const longestWord = words.reduce((longest, w) => (w.length > longest.length ? w : longest), '');
 
   return {
     // [...text].length is grapheme-aware (counts emojis as 1 each instead
@@ -449,7 +425,7 @@ async function handleTextStatsTool(args: unknown): Promise<unknown> {
 async function handleSaveNoteTool(args: unknown): Promise<unknown> {
   const note =
     typeof (args as { note?: unknown })?.note === 'string'
-      ? ((args as { note: string }).note).trim()
+      ? (args as { note: string }).note.trim()
       : '';
 
   if (!note) {
@@ -524,8 +500,8 @@ function runWorkerShellProbe(): void {
 // ───────────────────────────────────────────────────────────────────────────
 async function handleGreet(rawArgs: Record<string, unknown>): Promise<void> {
   const nested =
-    ((rawArgs as { arguments?: Record<string, unknown> }).arguments as Record<string, unknown> | undefined) ??
-    {};
+    ((rawArgs as { arguments?: Record<string, unknown> }).arguments as
+      Record<string, unknown> | undefined) ?? {};
   const parsed = parseGreetArgs(nested);
   const greeting = buildGreeting(parsed);
 
@@ -556,13 +532,10 @@ extensionBridge.registerExtensionImplementation(extensionId, workerExtension);
 
 // simulateScheduledTick — fires the same path as a real scheduler tick but
 // with scheduledTick=false so the section UI can distinguish the origin.
-workerContext.onRequest<{ commandId?: string }, void>(
-  'simulateScheduledTick',
-  async (payload) => {
-    const cid = payload?.commandId === 'tick-test-fast' ? 'tick-test-fast' : 'tick-test';
-    await recordTick(cid, { scheduledTick: false, source: 'manual' });
-  },
-);
+workerContext.onRequest<{ commandId?: string }, void>('simulateScheduledTick', async (payload) => {
+  const cid = payload?.commandId === 'tick-test-fast' ? 'tick-test-fast' : 'tick-test';
+  await recordTick(cid, { scheduledTick: false, source: 'manual' });
+});
 
 // clearLog — wipe any rolling log by key.
 workerContext.onRequest<{ logKey?: string }, void>('clearLog', async (payload) => {
@@ -584,17 +557,17 @@ workerContext.onRequest<
 
   if (surface === 'systemEvents') {
     const current =
-      ((await stateProxy.get(STATE_KEYS.subsSystemEvents)) as
-        | Partial<Record<SystemEventKind, boolean>>
-        | null) ?? {};
+      ((await stateProxy.get(STATE_KEYS.subsSystemEvents)) as Partial<
+        Record<SystemEventKind, boolean>
+      > | null) ?? {};
     const next = { ...current, [kind]: enabled } as Partial<Record<SystemEventKind, boolean>>;
     await stateProxy.set(STATE_KEYS.subsSystemEvents, next);
     await systemEventsController.applyDesired(next);
   } else if (surface === 'application') {
     const current =
-      ((await stateProxy.get(STATE_KEYS.subsApplication)) as
-        | Partial<Record<ApplicationPushKind, boolean>>
-        | null) ?? {};
+      ((await stateProxy.get(STATE_KEYS.subsApplication)) as Partial<
+        Record<ApplicationPushKind, boolean>
+      > | null) ?? {};
     const next = { ...current, [kind]: enabled } as Partial<Record<ApplicationPushKind, boolean>>;
     await stateProxy.set(STATE_KEYS.subsApplication, next);
     await applicationPushController.applyDesired(next);
@@ -695,23 +668,17 @@ workerContext.onRequest<{ path?: string }, { ok: boolean; error?: string }>(
   },
 );
 
-workerContext.onRequest<Record<string, never>, { ok: true }>(
-  'fsWatch.stop',
-  async () => {
-    await fsWatchController.stopWatching();
-    return { ok: true };
-  },
-);
+workerContext.onRequest<Record<string, never>, { ok: true }>('fsWatch.stop', async () => {
+  await fsWatchController.stopWatching();
+  return { ok: true };
+});
 
-workerContext.onRequest<Record<string, never>, { ok: true }>(
-  'fsWatch.reset',
-  async () => {
-    await stateProxy.set(STATE_KEYS.fsWatchEventCount, 0);
-    await stateProxy.set(STATE_KEYS.fsWatchLastEvent, null);
-    await stateProxy.set(STATE_KEYS.logsFsWatch, []);
-    return { ok: true };
-  },
-);
+workerContext.onRequest<Record<string, never>, { ok: true }>('fsWatch.reset', async () => {
+  await stateProxy.set(STATE_KEYS.fsWatchEventCount, 0);
+  await stateProxy.set(STATE_KEYS.fsWatchLastEvent, null);
+  await stateProxy.set(STATE_KEYS.logsFsWatch, []);
+  return { ok: true };
+});
 
 // ───────────────────────────────────────────────────────────────────────────
 // Activate.
@@ -723,10 +690,6 @@ void (async () => {
     log.error(`[${extensionId}] worker activate failed: ${describe(err)}`);
   }
 })();
-
-window.addEventListener('beforeunload', () => {
-  void workerExtension.deactivate();
-});
 
 function describe(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
