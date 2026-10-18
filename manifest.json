@@ -18,6 +18,7 @@
     "storage:read",
     "storage:write",
     "network",
+    "network:lan",
     "oauth:use",
     "shell:spawn",
     "fs:read",

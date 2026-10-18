@@ -5,6 +5,7 @@
     ExtensionStateProxy,
     INetworkService,
     IWebSocketHandle,
+    LanDevice,
   } from 'asyar-sdk/view';
   import { STATE_KEYS, type WorkerWebSocketProbe } from '../stateKeys';
 
@@ -141,6 +142,39 @@
       workerProbeLoading = false;
     }
   }
+
+  // LAN Devices state & methods
+  let lanDevices = $state<LanDevice[]>([]);
+  let lanLoading = $state(false);
+  let lanError = $state('');
+  let lanFetchUrl = $state('http://192.168.1.1:80');
+  let lanFetchOutput = $state('');
+
+  async function loadLanDevices() {
+    lanLoading = true;
+    lanError = '';
+    try {
+      lanDevices = await network.listLanDevices();
+    } catch (e: any) {
+      lanError = e?.message ?? String(e);
+    } finally {
+      lanLoading = false;
+    }
+  }
+
+  async function testLanFetch(targetUrl: string) {
+    lanFetchOutput = `Fetching ${targetUrl}…`;
+    try {
+      const res = await network.fetch(targetUrl, { method: 'GET', timeout: 5000 });
+      const body =
+        typeof res.body === 'string' && res.body.length > 500
+          ? res.body.slice(0, 500) + '…'
+          : JSON.stringify(res.body);
+      lanFetchOutput = `status: ${res.status} ${res.ok ? '✓' : '✗'}\n\n${body}`;
+    } catch (e: any) {
+      lanFetchOutput = `Error: ${e?.message ?? e}`;
+    }
+  }
 </script>
 
 <div class="section">
@@ -269,6 +303,77 @@
       {/if}
     </div>
   </div>
+
+  <hr class="section-divider" />
+
+  <header class="section-header">
+    <div>
+      <span class="section-title">LAN Devices (network:lan)</span>
+      <span class="section-desc">
+        Test user-approved local network devices and read them via <code>network.listLanDevices()</code>.
+      </span>
+    </div>
+  </header>
+
+  <div class="btn-group">
+    <button class="action-btn" onclick={loadLanDevices} disabled={lanLoading}>
+      <span class="btn-icon">📡</span>
+      <span class="btn-text">
+        <span class="btn-name">{lanLoading ? 'Listing Devices…' : 'List Approved LAN Devices'}</span>
+        <span class="btn-hint">await network.listLanDevices()</span>
+      </span>
+    </button>
+  </div>
+
+  {#if lanError}
+    <div class="output-area">
+      <span class="output-label">ERROR</span>
+      <div class="output-body err">{lanError}</div>
+    </div>
+  {/if}
+
+  <div class="output-area">
+    <span class="output-label">APPROVED LAN DEVICES ({lanDevices.length})</span>
+    {#if lanDevices.length > 0}
+      <div class="output-body">
+        {#each lanDevices as dev}
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; gap: 0.5rem;">
+            <span><strong>{dev.host}:{dev.port}</strong> {dev.label ? `(${dev.label})` : ''}</span>
+            <button class="action-btn" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick={() => testLanFetch(`http://${dev.host}:${dev.port}`)}>
+              Fetch : {dev.port}
+            </button>
+          </div>
+        {/each}
+      </div>
+    {:else}
+      <div class="output-body muted">
+        No approved LAN devices found for this extension.<br />
+        Go to <strong>Settings → Extensions → SDK Playground → Local network devices</strong> to scan and approve devices.
+      </div>
+    {/if}
+  </div>
+
+  <div class="field" style="margin-top: 1rem;">
+    <span class="field-label">TEST CUSTOM LAN URL (Verify SSRF / LAN guard)</span>
+    <input class="field-input" type="text" bind:value={lanFetchUrl} placeholder="http://192.168.1.1:80" />
+  </div>
+
+  <div class="btn-group">
+    <button class="action-btn" onclick={() => testLanFetch(lanFetchUrl)}>
+      <span class="btn-icon">🌐</span>
+      <span class="btn-text">
+        <span class="btn-name">Test LAN Fetch</span>
+        <span class="btn-hint">network.fetch(lanFetchUrl)</span>
+      </span>
+    </button>
+  </div>
+
+  {#if lanFetchOutput}
+    <div class="output-area">
+      <span class="output-label">LAN FETCH RESPONSE</span>
+      <pre class="output-body">{lanFetchOutput}</pre>
+    </div>
+  {/if}
 </div>
 
 <style>
