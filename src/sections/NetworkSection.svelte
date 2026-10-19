@@ -33,6 +33,7 @@
   let workerProbeLoading = $state(false);
 
   onMount(() => {
+    void loadLanDevices();
     let active = true;
     let unsubscribe: (() => void | Promise<void>) | null = null;
     (async () => {
@@ -155,6 +156,9 @@
     lanError = '';
     try {
       lanDevices = await network.listLanDevices();
+      if (lanDevices.length > 0 && lanFetchUrl === 'http://192.168.1.1:80') {
+        lanFetchUrl = `http://${lanDevices[0].host}:${lanDevices[0].port}`;
+      }
     } catch (e: any) {
       lanError = e?.message ?? String(e);
     } finally {
@@ -173,6 +177,61 @@
       lanFetchOutput = `status: ${res.status} ${res.ok ? '✓' : '✗'}\n\n${body}`;
     } catch (e: any) {
       lanFetchOutput = `Error: ${e?.message ?? e}`;
+    }
+  }
+
+  // In-flow LAN device picker state & methods
+  let lanPickerLoading = $state(false);
+  let lanPickerResult = $state('');
+  let customHost = $state('192.168.1.50');
+  let customPort = $state('8080');
+  let customLabel = $state('Custom Device');
+
+  async function requestDevice() {
+    lanPickerLoading = true;
+    lanPickerResult = 'Requesting LAN device…';
+    try {
+      const picked = await network.requestLanDevice({
+        reason: 'Pick a device to probe',
+        serviceTypes: ['_mqtt._tcp.local.'],
+      });
+      if (picked) {
+        lanPickerResult = `Picked device: ${picked.host}:${picked.port} (${picked.label || 'no label'})`;
+        await loadLanDevices();
+      } else {
+        lanPickerResult = 'Cancelled by user (no grant written)';
+      }
+    } catch (e: any) {
+      lanPickerResult = `Error: ${e?.message ?? e}`;
+    } finally {
+      lanPickerLoading = false;
+    }
+  }
+
+  async function requestCustomHost() {
+    const portNum = Number(customPort);
+    if (!customHost || !Number.isInteger(portNum) || portNum < 1 || portNum > 65535) {
+      lanPickerResult = 'Please enter a valid host and port';
+      return;
+    }
+    lanPickerLoading = true;
+    lanPickerResult = `Requesting custom LAN host ${customHost}:${portNum}…`;
+    try {
+      const picked = await network.requestLanHost({
+        host: customHost.trim(),
+        port: portNum,
+        label: customLabel.trim() || undefined,
+      });
+      if (picked) {
+        lanPickerResult = `Approved host: ${picked.host}:${picked.port} (${picked.label || 'no label'})`;
+        await loadLanDevices();
+      } else {
+        lanPickerResult = 'Cancelled by user (no grant written)';
+      }
+    } catch (e: any) {
+      lanPickerResult = `Error: ${e?.message ?? e}`;
+    } finally {
+      lanPickerLoading = false;
     }
   }
 </script>
@@ -323,6 +382,13 @@
         <span class="btn-hint">await network.listLanDevices()</span>
       </span>
     </button>
+    <button class="action-btn" onclick={requestDevice} disabled={lanPickerLoading}>
+      <span class="btn-icon">🔍</span>
+      <span class="btn-text">
+        <span class="btn-name">{lanPickerLoading ? 'Requesting…' : 'Request LAN Device'}</span>
+        <span class="btn-hint">await network.requestLanDevice(…)</span>
+      </span>
+    </button>
   </div>
 
   {#if lanError}
@@ -348,10 +414,38 @@
     {:else}
       <div class="output-body muted">
         No approved LAN devices found for this extension.<br />
-        Go to <strong>Settings → Extensions → SDK Playground → Local network devices</strong> to scan and approve devices.
+        <button class="action-btn" style="margin-top: 0.5rem; display: inline-flex;" onclick={requestDevice} disabled={lanPickerLoading}>
+          Request a device
+        </button>
       </div>
     {/if}
   </div>
+
+  <div class="field" style="margin-top: 1rem;">
+    <span class="field-label">REQUEST CUSTOM LAN HOST (Direct in-flow approval)</span>
+    <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.25rem;">
+      <input class="field-input" style="flex: 2;" type="text" bind:value={customHost} placeholder="Host or IP" />
+      <input class="field-input" style="flex: 1;" type="number" bind:value={customPort} placeholder="Port" />
+      <input class="field-input" style="flex: 2;" type="text" bind:value={customLabel} placeholder="Label (optional)" />
+    </div>
+  </div>
+
+  <div class="btn-group">
+    <button class="action-btn" onclick={requestCustomHost} disabled={lanPickerLoading}>
+      <span class="btn-icon">🔑</span>
+      <span class="btn-text">
+        <span class="btn-name">Request Custom LAN Host</span>
+        <span class="btn-hint">await network.requestLanHost(…)</span>
+      </span>
+    </button>
+  </div>
+
+  {#if lanPickerResult}
+    <div class="output-area">
+      <span class="output-label">LAN PICKER RESULT</span>
+      <div class="output-body">{lanPickerResult}</div>
+    </div>
+  {/if}
 
   <div class="field" style="margin-top: 1rem;">
     <span class="field-label">TEST CUSTOM LAN URL (Verify SSRF / LAN guard)</span>
