@@ -30,6 +30,7 @@
     "application:read",
     "app:frontmost-watch",
     "power:inhibit",
+    "media:control",
     "systemEvents:read",
     "timers:schedule",
     "timers:cancel",
