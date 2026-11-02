@@ -35,6 +35,8 @@
     "calendar:write",
     "reminders:read",
     "reminders:write",
+    "shortcuts:read",
+    "shortcuts:run",
     "systemEvents:read",
     "timers:schedule",
     "timers:cancel",
