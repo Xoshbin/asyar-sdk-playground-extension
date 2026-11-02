@@ -17,6 +17,8 @@
     { value: '', label: 'System (media keys / best player)' },
     { value: 'music', label: 'Music' },
     { value: 'spotify', label: 'Spotify' },
+    { value: 'tv', label: 'TV (macOS)' },
+    { value: 'vlc', label: 'VLC' },
   ];
 
   let loading = $state(false);

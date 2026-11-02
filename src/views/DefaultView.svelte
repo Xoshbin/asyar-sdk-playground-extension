@@ -22,6 +22,7 @@
   import CommandMetadataSection from '../sections/CommandMetadataSection.svelte';
   import PowerSection from '../sections/PowerSection.svelte';
   import MediaSection from '../sections/MediaSection.svelte';
+  import CalendarSection from '../sections/CalendarSection.svelte';
   import SystemEventsSection from '../sections/SystemEventsSection.svelte';
   import StatusBarSection from '../sections/StatusBarSection.svelte';
   import TimersSection from '../sections/TimersSection.svelte';
@@ -52,6 +53,7 @@
     { id: 'cmdmeta', label: 'Cmd Metadata', icon: '🏷️' },
     { id: 'power',       label: 'Power',       icon: '☕' },
     { id: 'media',       label: 'Media',       icon: '🎵' },
+    { id: 'calendar',    label: 'Calendar',    icon: '📅' },
     { id: 'sysevents',   label: 'System Events', icon: '📡' },
     { id: 'statusbar',   label: 'Status Bar',  icon: '🧭' },
     { id: 'timers',      label: 'Timers',      icon: '⏰' },
@@ -138,6 +140,8 @@
       <PowerSection {context} />
     {:else if activeTab === 'media'}
       <MediaSection {context} />
+    {:else if activeTab === 'calendar'}
+      <CalendarSection {context} />
     {:else if activeTab === 'sysevents'}
       <SystemEventsSection {context} />
     {:else if activeTab === 'statusbar'}
