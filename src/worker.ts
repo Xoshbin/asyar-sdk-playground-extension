@@ -6,6 +6,7 @@
 //   - Notification-action commandIds (notif-extend, notif-stop) [step 3]
 //   - Timer fire commandIds (timer-ring, timer-snooze)         [step 3]
 //   - greet command                                            [step 6]
+//   - image-icon command (512px PNG icon probe)
 //   - System events + Application push subscriptions           [step 2]
 //   - StatusBar tray registration + click callbacks            [step 4]
 //   - RPC handlers for view-initiated actions
@@ -309,6 +310,10 @@ class SDKPlaygroundWorkerExtension implements Extension {
         runWorkerShellProbe();
         return;
 
+      case 'image-icon':
+        await announceImageIcon();
+        return;
+
       default:
         if (DYNAMIC_IDS.has(commandId)) {
           await recordDynamicExecute(commandId, rawArgs);
@@ -492,6 +497,21 @@ function runWorkerShellProbe(): void {
     });
   } catch (err: unknown) {
     log.warn(`worker shell probe threw: ${describe(err)}`);
+  }
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// Image icon probe — the command exists for its icon: a 512px PNG in
+// public/icons/. Running it only confirms the row is a real command.
+// ───────────────────────────────────────────────────────────────────────────
+async function announceImageIcon(): Promise<void> {
+  try {
+    await notifier.sendBackground({
+      title: 'Image Icon Probe',
+      body: 'This command uses a 512px PNG icon.',
+    });
+  } catch (err: unknown) {
+    log.warn(`image icon notification failed: ${describe(err)}`);
   }
 }
 

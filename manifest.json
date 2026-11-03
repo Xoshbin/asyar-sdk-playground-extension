@@ -191,6 +191,13 @@
       "mode": "background"
     },
     {
+      "id": "image-icon",
+      "name": "Image Icon Probe",
+      "description": "Uses a 512px PNG as its icon. Installed copies are served a 128px version written at install; a linked dev copy shows the original.",
+      "icon": "icons/image-icon-512.png",
+      "mode": "background"
+    },
+    {
       "id": "notif-extend",
       "name": "Coffee — extend",
       "description": "Fired by the Extend button in the feedback harness.",
