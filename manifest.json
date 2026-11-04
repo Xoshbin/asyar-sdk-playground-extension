@@ -41,7 +41,8 @@
     "timers:schedule",
     "timers:cancel",
     "timers:list",
-    "tools:register"
+    "tools:register",
+    "ai:web-search"
   ],
   "permissionArgs": {
     "fs:watch": [
@@ -273,6 +274,14 @@
   "background": {
     "main": "dist/worker.js"
   },
+  "webSearchEngines": [
+    {
+      "id": "playground-search",
+      "name": "Playground Search",
+      "description": "Mock search engine from SDK Playground for smoke testing the SPI",
+      "requiresApiKey": false
+    }
+  ],
   "tools": [
     {
       "id": "playground_text_stats",

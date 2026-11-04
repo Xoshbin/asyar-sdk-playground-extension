@@ -256,6 +256,35 @@ class SDKPlaygroundWorkerExtension implements Extension {
         log.warn(`registerTool(${toolDecl.id}) failed: ${describe(err)}`);
       }
     }
+
+    // Web Search Engine SPI — register engine declared in manifest
+    try {
+      workerContext.ai.registerWebSearchEngine({
+        id: 'playground-search',
+        name: 'Playground Search',
+        search: async (query) => {
+          log.info(`[${extensionId}] playground-search query="${query.query}" limit=${query.limit}`);
+          return {
+            sources: [
+              {
+                title: `Playground Results for: ${query.query}`,
+                url: `https://playground.example.com/search?q=${encodeURIComponent(query.query)}`,
+              },
+            ],
+            results: [
+              {
+                title: `Playground Results for: ${query.query}`,
+                url: `https://playground.example.com/search?q=${encodeURIComponent(query.query)}`,
+                snippet: `Mock search hit from SDK Playground worker for query: "${query.query}". Grounding SPI is working!`,
+              },
+            ],
+          };
+        },
+      });
+      log.info(`[${extensionId}] registered web search engine: playground-search`);
+    } catch (err: unknown) {
+      log.warn(`registerWebSearchEngine failed: ${describe(err)}`);
+    }
   }
 
   async deactivate(): Promise<void> {
