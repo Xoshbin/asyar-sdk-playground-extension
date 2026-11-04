@@ -285,6 +285,51 @@ class SDKPlaygroundWorkerExtension implements Extension {
     } catch (err: unknown) {
       log.warn(`registerWebSearchEngine failed: ${describe(err)}`);
     }
+
+    // AI Model & Inference Providers SPI — register provider declared in manifest
+    try {
+      workerContext.ai.registerAiProvider({
+        id: 'playground-llm',
+        completeStream: async (request, onChunk, signal) => {
+          log.info(
+            `[${extensionId}] playground-llm request model="${request.modelId}" messages=${request.messages.length}`,
+          );
+          const prompt = request.messages[request.messages.length - 1]?.content ?? '';
+          const responseText = `Hello from Playground LLM! You said: "${prompt}". Inference SPI streaming is working seamlessly!`;
+
+          // Stream chunks word by word with slight delay
+          const words = responseText.split(' ');
+          for (let i = 0; i < words.length; i++) {
+            if (signal.aborted) {
+              log.info(`[${extensionId}] playground-llm stream aborted`);
+              return;
+            }
+            const word = (i === 0 ? '' : ' ') + words[i];
+            onChunk({ type: 'token', token: word });
+            // Small pause for realistic streaming feel
+            await new Promise((r) => setTimeout(r, 40));
+          }
+        },
+        listModels: async () => {
+          return [
+            { id: 'mock-fast-model', label: 'Mock Fast Model (Playground)', contextWindow: 32768 },
+            {
+              id: 'mock-reasoning-model',
+              label: 'Mock Reasoning Model (Playground)',
+              contextWindow: 65536,
+            },
+            {
+              id: 'mock-dynamic-model',
+              label: 'Mock Dynamic Model (Fetched from Worker)',
+              contextWindow: 128000,
+            },
+          ];
+        },
+      });
+      log.info(`[${extensionId}] registered AI provider: playground-llm`);
+    } catch (err: unknown) {
+      log.warn(`registerAiProvider failed: ${describe(err)}`);
+    }
   }
 
   async deactivate(): Promise<void> {

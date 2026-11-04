@@ -42,7 +42,8 @@
     "timers:cancel",
     "timers:list",
     "tools:register",
-    "ai:web-search"
+    "ai:web-search",
+    "ai:provider"
   ],
   "permissionArgs": {
     "fs:watch": [
@@ -280,6 +281,27 @@
       "name": "Playground Search",
       "description": "Mock search engine from SDK Playground for smoke testing the SPI",
       "requiresApiKey": false
+    }
+  ],
+  "aiProviders": [
+    {
+      "id": "playground-llm",
+      "name": "Playground LLM",
+      "description": "Mock AI inference provider from SDK Playground for smoke testing the SPI",
+      "requiresApiKey": false,
+      "requiresBaseUrl": false,
+      "models": [
+        {
+          "id": "mock-fast-model",
+          "name": "Mock Fast Model (Playground)",
+          "contextWindow": 32768
+        },
+        {
+          "id": "mock-reasoning-model",
+          "name": "Mock Reasoning Model (Playground)",
+          "contextWindow": 65536
+        }
+      ]
     }
   ],
   "tools": [
