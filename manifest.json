@@ -43,7 +43,8 @@
     "timers:list",
     "tools:register",
     "ai:web-search",
-    "ai:provider"
+    "ai:provider",
+    "ai:web-reader"
   ],
   "permissionArgs": {
     "fs:watch": [
@@ -302,6 +303,15 @@
           "contextWindow": 65536
         }
       ]
+    }
+  ],
+  "webReaders": [
+    {
+      "id": "playground-reader",
+      "name": "Playground Reader",
+      "description": "Mock web scraper / markdown reader from SDK Playground for smoke testing the SPI",
+      "requiresApiKey": false,
+      "requiresBaseUrl": false
     }
   ],
   "tools": [
