@@ -44,7 +44,8 @@
     "tools:register",
     "ai:web-search",
     "ai:provider",
-    "ai:web-reader"
+    "ai:web-reader",
+    "files:search-provider"
   ],
   "permissionArgs": {
     "fs:watch": [
@@ -312,6 +313,16 @@
       "description": "Mock web scraper / markdown reader from SDK Playground for smoke testing the SPI",
       "requiresApiKey": false,
       "requiresBaseUrl": false
+    }
+  ],
+  "fileSearchProviders": [
+    {
+      "id": "playground-drive",
+      "name": "Playground Drive",
+      "description": "Mock cloud document search for smoke testing the File Search SPI",
+      "icon": "icon:folder",
+      "requiresAuth": false,
+      "defaultEnabled": true
     }
   ],
   "tools": [

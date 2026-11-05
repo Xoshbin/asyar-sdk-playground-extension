@@ -353,6 +353,58 @@ class SDKPlaygroundWorkerExtension implements Extension {
     } catch (err: unknown) {
       log.warn(`registerWebReader failed: ${describe(err)}`);
     }
+
+    // Cloud / Remote File Search SPI — register file search provider declared in manifest
+    try {
+      workerContext.files.registerFileSearchProvider({
+        id: 'playground-drive',
+        search: async (query, signal) => {
+          log.info(`[${extensionId}] playground-drive query="${query.query}" limit=${query.limit}`);
+          const q = query.query.toLowerCase();
+          const mockDocuments = [
+            {
+              id: 'doc-plan-2026',
+              title: 'Q3 Financial & Operational Plan 2026',
+              container: 'Finance / Corporate Planning',
+              url: 'https://docs.google.com/spreadsheets/d/mock-plan-2026',
+              icon: 'icon:table',
+              mimeType: 'application/vnd.google-apps.spreadsheet',
+              modifiedAt: Date.now() - 3600_000 * 2,
+              size: 104_8576,
+            },
+            {
+              id: 'doc-roadmap-2026',
+              title: 'Engineering Architecture & Roadmap 2026',
+              container: 'Engineering / Core',
+              url: 'https://notion.so/mock-roadmap-2026',
+              icon: 'icon:document',
+              mimeType: 'text/markdown',
+              modifiedAt: Date.now() - 3600_000 * 24,
+              size: 25_600,
+            },
+            {
+              id: 'doc-brand-guidelines',
+              title: 'Asyar Brand Guidelines & Identity',
+              container: 'Design / Assets',
+              url: 'https://drive.google.com/file/d/mock-brand-guidelines',
+              icon: 'icon:photo',
+              mimeType: 'application/pdf',
+              modifiedAt: Date.now() - 3600_000 * 48,
+              size: 5_242_880,
+            },
+          ];
+
+          return mockDocuments.filter(
+            (doc) =>
+              doc.title.toLowerCase().includes(q) ||
+              doc.container.toLowerCase().includes(q),
+          );
+        },
+      });
+      log.info(`[${extensionId}] registered file search provider: playground-drive`);
+    } catch (err: unknown) {
+      log.warn(`registerFileSearchProvider failed: ${describe(err)}`);
+    }
   }
 
   async deactivate(): Promise<void> {
