@@ -22,6 +22,7 @@
   let output = $state('');
   let outputOk = $state(true);
   let url = $state('https://httpbin.org/get');
+  let imagePreview = $state<string | null>(null);
 
   // WebSocket state
   let wsUrl = $state('wss://echo.websocket.org');
@@ -68,8 +69,15 @@
 
   async function fetchGet() {
     loading = true;
+    imagePreview = null;
     try {
       const res = await network.fetch(url, { method: 'GET' });
+      const contentType = Object.entries(res.headers).find(
+        ([key]) => key.toLowerCase() === 'content-type',
+      )?.[1];
+      if (res.ok && contentType?.toLowerCase().startsWith('image/') && !contentType.includes('svg')) {
+        imagePreview = `data:${contentType.split(';')[0].trim()};base64,${res.body}`;
+      }
       const body = typeof res.body === 'string' && res.body.length > 400
         ? res.body.slice(0, 400) + '…'
         : res.body;
@@ -267,6 +275,10 @@
       <div class="output-body" class:ok={outputOk} class:err={!outputOk}>{output}</div>
     {:else}
       <div class="output-body muted">Enter a URL and press Fetch GET</div>
+    {/if}
+    {#if imagePreview}
+      <span class="output-label">IMAGE PREVIEW</span>
+      <img src={imagePreview} alt="Fetched response preview" style="max-width: 100%; max-height: 240px; object-fit: contain;" />
     {/if}
   </div>
 
