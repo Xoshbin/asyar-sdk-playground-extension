@@ -20,7 +20,6 @@ import {
   ExtensionContext,
   extensionBridge,
   registerIconElement,
-  registerSelectElement,
   type Extension,
   type IExtensionManager,
 } from 'asyar-sdk/view';
@@ -68,7 +67,6 @@ const extensionId =
 const context = new ExtensionContext();
 context.setExtensionId(extensionId);
 registerIconElement();
-registerSelectElement();
 
 const viewExtension = new SDKPlaygroundViewExtension();
 extensionBridge.registerManifest(

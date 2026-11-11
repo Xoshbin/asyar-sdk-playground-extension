@@ -3,7 +3,6 @@
   import {
     ActionCategory,
     ActionContext,
-    type AsyarSelectOption,
     type ExtensionContext,
     type IActionService,
     type IFeedbackService,
@@ -19,7 +18,7 @@
   const feedback = untrack(() => context.getService<IFeedbackService>('feedback'));
   const logger = untrack(() => context.getService<ILogService>('log'));
 
-  const LANGUAGE_OPTIONS: AsyarSelectOption[] = [
+  const LANGUAGE_OPTIONS = [
     { value: 'ckb', label: 'Kurdish (Sorani)' },
     { value: 'kmr', label: 'Kurdish (Kurmanji)' },
     { value: 'en', label: 'English' },
@@ -68,11 +67,6 @@
     language = 'en';
     notes = '';
     void feedback.showHUD('Reset Keyboard-First demo form');
-  }
-
-  function handleSelectChange(event: Event) {
-    const target = event.currentTarget as HTMLElement & { value?: string };
-    language = target.value ?? '';
   }
 
   const PRIMARY_ACTION_ID = 'sdk-playground:keyboard-primary';
@@ -143,7 +137,10 @@
       aria-selected={mode === 'empty'}
       class="mode-pill"
       class:active={mode === 'empty'}
-      onclick={() => (mode = 'empty')}
+      onclick={(e) => {
+        mode = 'empty';
+        (e.currentTarget as HTMLButtonElement).blur();
+      }}
     >
       Empty State Mode (↵ to create)
     </button>
@@ -175,17 +172,16 @@
         />
       </label>
 
-      <div class="field">
+      <label class="field">
         <span class="field-label">
-          2. Searchable Language Picker <span class="hint">(press Enter or ↓, type “ku”, press Enter to pick, or Esc to close)</span>
+          2. Language <span class="hint">(token-styled HTML control; host searchable picker is in “Required Preferences Demo”)</span>
         </span>
-        <asyar-select
-          value={language}
-          options={LANGUAGE_OPTIONS}
-          placeholder="Pick a language…"
-          onchange={handleSelectChange}
-        ></asyar-select>
-      </div>
+        <select class="text-input" bind:value={language}>
+          {#each LANGUAGE_OPTIONS as opt (opt.value)}
+            <option value={opt.value}>{opt.label}</option>
+          {/each}
+        </select>
+      </label>
 
       <label class="field">
         <span class="field-label">
