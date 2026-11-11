@@ -45,7 +45,9 @@
     "ai:web-search",
     "ai:provider",
     "ai:web-reader",
-    "files:search-provider"
+    "files:search-provider",
+    "preferences:read",
+    "preferences:write"
   ],
   "permissionArgs": {
     "fs:watch": [
@@ -158,6 +160,40 @@
       "icon": "👋",
       "mode": "view",
       "component": "OnboardingView"
+    },
+    {
+      "id": "required-prefs-demo",
+      "name": "Required Preferences Demo",
+      "description": "Triggers the in-shell Required Preferences screen (searchable dropdown + required field) before opening the demo view",
+      "icon": "📝",
+      "mode": "view",
+      "component": "RequiredPrefsView",
+      "preferences": [
+        {
+          "name": "targetRegion",
+          "type": "dropdown",
+          "title": "Target Region",
+          "description": "Pick a region using the searchable keyboard dropdown.",
+          "required": true,
+          "data": [
+            { "value": "us-east", "title": "US East (N. Virginia)" },
+            { "value": "us-west", "title": "US West (Oregon)" },
+            { "value": "eu-central", "title": "EU Central (Frankfurt)" },
+            { "value": "eu-west", "title": "EU West (Dublin)" },
+            { "value": "ap-northeast", "title": "Asia Pacific (Tokyo)" },
+            { "value": "ap-southeast", "title": "Asia Pacific (Singapore)" },
+            { "value": "me-south", "title": "Middle East (Bahrain)" }
+          ]
+        },
+        {
+          "name": "workspaceName",
+          "type": "textfield",
+          "title": "Workspace Name",
+          "description": "Required workspace label shown after setup completes.",
+          "required": true,
+          "placeholder": "e.g. Acme Prod"
+        }
+      ]
     },
     {
       "id": "tick-test",

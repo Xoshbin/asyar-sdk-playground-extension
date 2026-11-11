@@ -28,16 +28,18 @@
   import StatusBarSection from '../sections/StatusBarSection.svelte';
   import TimersSection from '../sections/TimersSection.svelte';
   import FileSystemWatcherSection from '../sections/FileSystemWatcherSection.svelte';
+  import KeyboardFirstSection from '../sections/KeyboardFirstSection.svelte';
 
   interface Props {
     context: ExtensionContext;
   }
   let { context }: Props = $props();
 
-  let activeTab = $state('preferences');
+  let activeTab = $state('keyboard');
 
   const tabs = [
-    { id: 'preferences', label: 'Preferences', icon: '⚙️' },
+    { id: 'keyboard',    label: 'Keyboard & Select', icon: '⌨️' },
+    { id: 'preferences', label: 'Preferences',       icon: '⚙️' },
     { id: 'feedback',    label: 'Feedback',    icon: '💬' },
     { id: 'selection',   label: 'Selection',   icon: '✂️' },
     { id: 'clipboard',   label: 'Clipboard',   icon: '📋' },
@@ -108,7 +110,9 @@
 
   <!-- Content -->
   <div class="content">
-    {#if activeTab === 'preferences'}
+    {#if activeTab === 'keyboard'}
+      <KeyboardFirstSection {context} />
+    {:else if activeTab === 'preferences'}
       <PreferencesSection {context} />
     {:else if activeTab === 'feedback'}
       <FeedbackSection {context} />

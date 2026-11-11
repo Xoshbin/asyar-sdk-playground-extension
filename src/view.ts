@@ -20,12 +20,14 @@ import {
   ExtensionContext,
   extensionBridge,
   registerIconElement,
+  registerSelectElement,
   type Extension,
   type IExtensionManager,
 } from 'asyar-sdk/view';
 import manifest from '../manifest.json';
 import DefaultView from './views/DefaultView.svelte';
 import OnboardingView from './views/OnboardingView.svelte';
+import RequiredPrefsView from './views/RequiredPrefsView.svelte';
 
 class SDKPlaygroundViewExtension implements Extension {
   private extensionManager?: IExtensionManager;
@@ -46,6 +48,10 @@ class SDKPlaygroundViewExtension implements Extension {
       this.extensionManager?.navigateToView('org.asyar.sdk-playground/OnboardingView');
       return { type: 'view', viewPath: 'org.asyar.sdk-playground/OnboardingView' };
     }
+    if (commandId === 'required-prefs-demo') {
+      this.extensionManager?.navigateToView('org.asyar.sdk-playground/RequiredPrefsView');
+      return { type: 'view', viewPath: 'org.asyar.sdk-playground/RequiredPrefsView' };
+    }
     return undefined;
   }
 
@@ -62,6 +68,7 @@ const extensionId =
 const context = new ExtensionContext();
 context.setExtensionId(extensionId);
 registerIconElement();
+registerSelectElement();
 
 const viewExtension = new SDKPlaygroundViewExtension();
 extensionBridge.registerManifest(
@@ -105,6 +112,11 @@ if (viewName === 'DefaultView' && target) {
   });
 } else if (viewName === 'OnboardingView' && target) {
   mount(OnboardingView, {
+    target,
+    props: { context },
+  });
+} else if (viewName === 'RequiredPrefsView' && target) {
+  mount(RequiredPrefsView, {
     target,
     props: { context },
   });
