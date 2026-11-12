@@ -646,6 +646,12 @@ function runWorkerShellProbe(): void {
     });
   } catch (err: unknown) {
     log.warn(`worker shell probe threw: ${describe(err)}`);
+    void stateProxy.set(STATE_KEYS.workerShellProbe, {
+      at,
+      program: 'echo',
+      status: 'error',
+      error: `[PROBE_THREW] ${describe(err)}`,
+    } satisfies WorkerShellProbe);
   }
 }
 
