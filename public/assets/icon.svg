@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="32 32 448 448">
   <defs>
     <!-- Background Gradient -->
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -43,8 +43,8 @@
   <rect x="32" y="32" width="448" height="448" rx="104" fill="url(#bg)"/>
   <rect x="32" y="32" width="448" height="448" rx="104" fill="url(#topSheen)"/>
   <rect x="33" y="33" width="446" height="446" rx="103" fill="none" stroke="url(#specularRim)" stroke-width="2"/>
-
-  <g filter="url(#shadow)">
+  <g transform="translate(-102.400 -102.400) scale(1.4)">
+<g filter="url(#shadow)">
     <!-- Vapor Code Sparks Floating Above Flask -->
     <text x="256" y="130" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="34" font-weight="bold" fill="#E0F2FE" text-anchor="middle" filter="url(#cyanGlow)">{ ; }</text>
 
@@ -88,5 +88,6 @@
 
     <!-- Glass Specular Reflection Streak (Left flank) -->
     <path d="M 242, 214 L 242, 238 L 182, 335" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-opacity="0.6"/>
+  </g>
   </g>
 </svg>
