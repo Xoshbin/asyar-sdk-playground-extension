@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06B6D4"/>
+      <stop offset="40%" stop-color="#6366F1"/>
+      <stop offset="75%" stop-color="#4338CA"/>
+      <stop offset="100%" stop-color="#1E1B4B"/>
+    </linearGradient>
+
+    <!-- Top Ambient Sheen -->
+    <radialGradient id="topSheen" cx="50%" cy="12%" r="65%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- 1px Specular Bevel -->
+    <linearGradient id="specularRim" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.45"/>
+      <stop offset="40%" stop-color="#FFFFFF" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.03"/>
+    </linearGradient>
+
+    <!-- Reactive Liquid Gradient -->
+    <linearGradient id="liquidGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22D3EE"/>
+      <stop offset="50%" stop-color="#818CF8"/>
+      <stop offset="100%" stop-color="#C084FC"/>
+    </linearGradient>
+
+    <!-- Hero Drop Shadow -->
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#0F172A" flood-opacity="0.65"/>
+    </filter>
+
+    <!-- Glow for vapor/bubbles -->
+    <filter id="cyanGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#22D3EE" flood-opacity="0.8"/>
+    </filter>
+  </defs>
+
+  <!-- Base Squircle -->
+  <rect x="32" y="32" width="448" height="448" rx="104" fill="url(#bg)"/>
+  <rect x="32" y="32" width="448" height="448" rx="104" fill="url(#topSheen)"/>
+  <rect x="33" y="33" width="446" height="446" rx="103" fill="none" stroke="url(#specularRim)" stroke-width="2"/>
+
+  <g filter="url(#shadow)">
+    <!-- Vapor Code Sparks Floating Above Flask -->
+    <text x="256" y="130" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="34" font-weight="bold" fill="#E0F2FE" text-anchor="middle" filter="url(#cyanGlow)">{ ; }</text>
+
+    <!-- Luminous Reactive Bubbles -->
+    <circle cx="230" cy="155" r="7" fill="#67E8F9" filter="url(#cyanGlow)"/>
+    <circle cx="280" cy="170" r="9" fill="#A5B4FC" opacity="0.9"/>
+    <circle cx="248" cy="188" r="5" fill="#E0E7FF"/>
+
+    <!-- Erlenmeyer Glass Flask Body -->
+    <!-- Glass Lip Ring -->
+    <rect x="230" y="196" width="52" height="10" rx="5" fill="#FFFFFF"/>
+    <!-- Flask Wall (Pure crisp white frosted glass) -->
+    <path d="M 238, 206
+             L 238, 240
+             L 164, 350
+             C 154, 365 164, 376 182, 376
+             L 330, 376
+             C 348, 376 358, 365 348, 350
+             L 274, 240
+             L 274, 206 Z"
+          fill="#FFFFFF" fill-opacity="0.95"/>
+
+    <!-- Reactive Liquid Level inside Flask -->
+    <path d="M 198, 298
+             L 174, 344
+             C 166, 358 174, 368 188, 368
+             L 324, 368
+             C 338, 368 346, 358 338, 344
+             L 314, 298
+             Q 284, 308 256, 300
+             Q 228, 292 198, 298 Z"
+          fill="url(#liquidGrad)"/>
+
+    <!-- Liquid Surface Wave Highlight -->
+    <path d="M 198, 298 Q 228, 292 256, 300 Q 284, 308 314, 298" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-opacity="0.8"/>
+
+    <!-- Volumetric Measurement Etchings on Glass -->
+    <line x1="228" y1="280" x2="242" y2="280" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="216" y1="310" x2="236" y2="310" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="202" y1="340" x2="228" y2="340" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round"/>
+
+    <!-- Glass Specular Reflection Streak (Left flank) -->
+    <path d="M 242, 214 L 242, 238 L 182, 335" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-opacity="0.6"/>
+  </g>
+</svg>
