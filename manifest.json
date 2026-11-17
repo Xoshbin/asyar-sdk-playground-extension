@@ -140,7 +140,6 @@
       "id": "open",
       "name": "SDK Playground",
       "description": "Exercise every SDK service in a sandboxed Tier 2 extension",
-      "icon": "🧪",
       "actions": [
         {
           "id": "reset-tick-log",
