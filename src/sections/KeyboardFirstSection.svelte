@@ -1,12 +1,15 @@
 <script lang="ts">
-  import { onDestroy, untrack } from 'svelte';
+  import { onDestroy, onMount, untrack } from 'svelte';
   import {
     ActionCategory,
     ActionContext,
+    onKey,
+    onSearch,
     type ExtensionContext,
     type IActionService,
     type IFeedbackService,
     type ILogService,
+    type ViewKeyEvent,
   } from 'asyar-sdk/view';
 
   interface Props {
@@ -17,6 +20,27 @@
   const actions = untrack(() => context.getService<IActionService>('actions'));
   const feedback = untrack(() => context.getService<IFeedbackService>('feedback'));
   const logger = untrack(() => context.getService<ILogService>('log'));
+  const extensionId = untrack(() => context.extensionId);
+
+  let latestSearch = $state<string | null>(null);
+  let searchCount = $state(0);
+  let latestKey = $state<ViewKeyEvent | null>(null);
+  let keyCount = $state(0);
+
+  onMount(() => {
+    const unsubSearch = onSearch((query) => {
+      latestSearch = query;
+      searchCount += 1;
+    });
+    const unsubKey = onKey((event) => {
+      latestKey = event;
+      keyCount += 1;
+    });
+    return () => {
+      unsubSearch();
+      unsubKey();
+    };
+  });
 
   const LANGUAGE_OPTIONS = [
     { value: 'ckb', label: 'Kurdish (Sorani)' },
@@ -204,6 +228,24 @@
   {/if}
 
   <div class="output-area">
+    <span class="output-label">HOST BRIDGE &amp; CONTEXT PROBE</span>
+    <div class="output-body probe-grid">
+      <div class="probe-row">
+        <span class="probe-key">context.extensionId</span>
+        <code>{extensionId}</code>
+      </div>
+      <div class="probe-row">
+        <span class="probe-key">onSearch ({searchCount})</span>
+        <code>{latestSearch === null ? '(waiting for launcher search bar input…)' : JSON.stringify(latestSearch)}</code>
+      </div>
+      <div class="probe-row">
+        <span class="probe-key">onKey ({keyCount})</span>
+        <code>{latestKey === null ? '(waiting for launcher search bar keydown…)' : JSON.stringify(latestKey)}</code>
+      </div>
+    </div>
+  </div>
+
+  <div class="output-area">
     <span class="output-label">SUBMISSIONS ({submissions.length})</span>
     {#if submissions.length === 0}
       <div class="output-body muted">
@@ -348,5 +390,24 @@
     justify-content: space-between;
     gap: var(--space-3);
     padding: var(--space-1) 0;
+  }
+
+  .probe-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-height: 0;
+  }
+
+  .probe-row {
+    display: flex;
+    gap: var(--space-3);
+    align-items: baseline;
+  }
+
+  .probe-key {
+    min-width: 140px;
+    font-weight: 600;
+    color: var(--text-secondary);
   }
 </style>

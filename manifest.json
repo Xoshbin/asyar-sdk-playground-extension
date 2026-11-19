@@ -5,9 +5,9 @@
   "type": "extension",
   "description": "Developer playground demonstrating every Asyar SDK service in a Tier 2 extension",
   "author": "Developer",
-  "searchable": false,
+  "searchable": true,
   "icon": "assets/icon.png",
-  "asyarSdk": "^4.17.0",
+  "asyarSdk": "^4.20.0",
   "permissions": [
     "selection:read",
     "clipboard:read",
@@ -45,11 +45,15 @@
     "ai:web-search",
     "ai:provider",
     "ai:web-reader",
+    "files:read",
     "files:search-provider",
     "preferences:read",
     "preferences:write"
   ],
   "permissionArgs": {
+    "files:read": [
+      "~/**"
+    ],
     "fs:watch": [
       "/tmp/asyar-fs-watch/**"
     ],

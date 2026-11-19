@@ -13,6 +13,7 @@
   import OAuthSection from '../sections/OAuthSection.svelte';
   import ShellSection from '../sections/ShellSection.svelte';
   import FileManagerSection from '../sections/FileManagerSection.svelte';
+  import FilesSection from '../sections/FilesSection.svelte';
   import OpenerSection from '../sections/OpenerSection.svelte';
   import InteropSection from '../sections/InteropSection.svelte';
   import SchedulingSection from '../sections/SchedulingSection.svelte';
@@ -49,6 +50,7 @@
     { id: 'shell',       label: 'Shell',       icon: '🐚' },
     { id: 'opener',      label: 'Opener',      icon: '🚀' },
     { id: 'filemanager', label: 'File Manager', icon: '📁' },
+    { id: 'files',       label: 'Files & Paths', icon: '🗂️' },
     { id: 'interop',     label: 'Interop',     icon: '🔗' },
     { id: 'scheduling',  label: 'Scheduling',  icon: '⏱️' },
     { id: 'cache',       label: 'Cache',       icon: '⚡' },
@@ -132,6 +134,8 @@
       <OpenerSection {context} />
     {:else if activeTab === 'filemanager'}
       <FileManagerSection {context} />
+    {:else if activeTab === 'files'}
+      <FilesSection {context} />
     {:else if activeTab === 'interop'}
       <InteropSection {context} />
     {:else if activeTab === 'scheduling'}
