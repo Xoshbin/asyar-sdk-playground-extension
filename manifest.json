@@ -492,5 +492,11 @@
         "type": "manual"
       }
     }
+  ],
+  "category": "developer-tools",
+  "platforms": [
+    "macos",
+    "windows",
+    "linux"
   ]
 }
