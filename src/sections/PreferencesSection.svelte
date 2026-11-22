@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import type { ExtensionContext } from 'asyar-sdk/view';
+  import { isValidAiModelRef, type AiModelRef, type ExtensionContext } from 'asyar-sdk/view';
 
   interface Props {
     context: ExtensionContext;
@@ -30,6 +30,9 @@
     typeof snapshot.apiKey === 'string' && snapshot.apiKey
       ? '•'.repeat(Math.min(snapshot.apiKey.length, 12))
       : '— not set —',
+  );
+  let preferredAiModel = $derived<AiModelRef | null>(
+    isValidAiModelRef(snapshot.preferredAiModel) ? snapshot.preferredAiModel : null,
   );
 
   function openSettings() {
@@ -78,6 +81,13 @@
     <div class="pref-row">
       <span class="pref-label">API key (password, encrypted)</span>
       <span class="pref-value mono">{apiKeyMasked}</span>
+    </div>
+
+    <div class="pref-row">
+      <span class="pref-label">Preferred AI model (aiModel)</span>
+      <span class="pref-value mono">
+        {preferredAiModel ? `${preferredAiModel.providerId} / ${preferredAiModel.modelId}` : '— Use Asyar default —'}
+      </span>
     </div>
   </div>
 

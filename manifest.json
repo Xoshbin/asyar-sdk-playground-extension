@@ -42,6 +42,7 @@
     "timers:cancel",
     "timers:list",
     "tools:register",
+    "ai",
     "ai:web-search",
     "ai:provider",
     "ai:web-reader",
@@ -118,6 +119,12 @@
       "title": "Test API key",
       "description": "Demonstrates password encryption at rest. Never leaves this device.",
       "placeholder": "sk-..."
+    },
+    {
+      "name": "preferredAiModel",
+      "type": "aiModel",
+      "title": "Preferred AI model",
+      "description": "Demonstrates the aiModel preference picker. Optional; leave on Use Asyar default to use the launcher default."
     }
   ],
   "actions": [

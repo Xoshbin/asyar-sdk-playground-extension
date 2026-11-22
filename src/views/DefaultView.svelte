@@ -19,6 +19,7 @@
   import SchedulingSection from '../sections/SchedulingSection.svelte';
   import CacheSection from '../sections/CacheSection.svelte';
   import PreferencesSection from '../sections/PreferencesSection.svelte';
+  import AISection from '../sections/AISection.svelte';
   import ApplicationSection from '../sections/ApplicationSection.svelte';
   import CommandMetadataSection from '../sections/CommandMetadataSection.svelte';
   import PowerSection from '../sections/PowerSection.svelte';
@@ -41,6 +42,7 @@
   const tabs = [
     { id: 'keyboard',    label: 'Keyboard & Select', icon: '⌨️' },
     { id: 'preferences', label: 'Preferences',       icon: '⚙️' },
+    { id: 'ai',          label: 'AI Service',        icon: '🤖' },
     { id: 'feedback',    label: 'Feedback',    icon: '💬' },
     { id: 'selection',   label: 'Selection',   icon: '✂️' },
     { id: 'clipboard',   label: 'Clipboard',   icon: '📋' },
@@ -116,6 +118,8 @@
       <KeyboardFirstSection {context} />
     {:else if activeTab === 'preferences'}
       <PreferencesSection {context} />
+    {:else if activeTab === 'ai'}
+      <AISection {context} />
     {:else if activeTab === 'feedback'}
       <FeedbackSection {context} />
     {:else if activeTab === 'selection'}
